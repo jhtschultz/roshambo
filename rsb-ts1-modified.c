@@ -33,47 +33,47 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define rock      0
-#define paper     1
-#define scissors  2
+#define ROSHAMBO_BOT_rock      0
+#define ROSHAMBO_BOT_paper     1
+#define ROSHAMBO_BOT_scissors  2
 
-#define players   43         /* number of players in the tournament */
-#define tourneys  1          /* number of round-robin tournaments */
-#define trials    1000       /* number of turns per match */
+#define ROSHAMBO_BOT_players   43         /* number of players in the tournament */
+#define ROSHAMBO_BOT_tourneys  1          /* number of round-robin tournaments */
+#define ROSHAMBO_BOT_trials    1000       /* number of turns per match */
 
-#define fw        4          /* field width for printed numbers */
-#define verbose1  0          /* print result of each trial */
-#define verbose2  0          /* print match histories */
-#define verbose3  1          /* print result of each match */
+#define ROSHAMBO_BOT_fw        4          /* field width for printed numbers */
+#define ROSHAMBO_BOT_verbose1  0          /* print result of each trial */
+#define ROSHAMBO_BOT_verbose2  0          /* print match histories */
+#define ROSHAMBO_BOT_verbose3  1          /* print result of each match */
 
 /*  Full History Structure (global variables, accessible to the
                             current player during each match)
 
       - element 0 is the number of trials played so far
-      - element i is the action taken on turn i (1 <= i <= trials ) */
+      - element i is the action taken on turn i (1 <= i <= ROSHAMBO_BOT_trials ) */
 
-int my_history[trials+1], opp_history[trials+1];
+int ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_trials+1], ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_trials+1];
 
-int g_drawn;  /* statistical match draw value (global) */ 
-              /* for 1000 turn matches:  50.6 / sqrt(tourneys) */
+int ROSHAMBO_BOT_g_drawn;  /* statistical match draw value (global) */ 
+                           /* for 1000 turn matches:  50.6 / sqrt(ROSHAMBO_BOT_tourneys) */
 
 /*  Tournament Crosstable Structure  */
 
-#define nameleng  18
+#define ROSHAMBO_BOT_nameleng  18
 typedef struct {
-   char name[nameleng+1];   /* descriptive name (max 18 chars) */
+   char name[ROSHAMBO_BOT_nameleng+1];   /* descriptive name (max 18 chars) */
    int(*pname)();           /* function name for computer player */
-   int result[players+1];   /* list of player's match results */
-} Player_Table;
+   int result[ROSHAMBO_BOT_players+1];   /* list of player's match results */
+} ROSHAMBO_BOT_Player_Table;
 
 
-#define maxrandom 2147483648.0   /* 2^31, ratio range is 0 <= r < 1 */
+#define ROSHAMBO_BOT_maxrandom 2147483648.0   /* 2^31, ratio range is 0 <= r < 1 */
 
 int flip_biased_coin (double prob)
 {
    /* flip an unfair coin (bit) with given probability of getting a 1 */
 
-   if ( (random() / maxrandom) >= prob )
+   if ( (random() / ROSHAMBO_BOT_maxrandom) >= prob )
       return(0);
    else return(1);
 }
@@ -83,11 +83,11 @@ int biased_roshambo (double prob_rock, double prob_paper)
    /* roshambo with given probabilities of rock, paper, or scissors */
    double throw;
 
-   throw = random() / maxrandom;
+   throw = random() / ROSHAMBO_BOT_maxrandom;
 
-   if ( throw < prob_rock )                   { return(rock); }
-   else if ( throw < prob_rock + prob_paper ) { return(paper); }
-   else /* throw >= prob_rock + prob_paper */ { return(scissors); }
+   if ( throw < prob_rock )                   { return(ROSHAMBO_BOT_rock); }
+   else if ( throw < prob_rock + prob_paper ) { return(ROSHAMBO_BOT_paper); }
+   else /* throw >= prob_rock + prob_paper */ { return(ROSHAMBO_BOT_scissors); }
 }
 
 /*  Index of RoShamBo Player Algorithms:
@@ -156,7 +156,7 @@ int randbot ()  /* Random (Optimal) */
 int rockbot ()  /* Good Ole Rock */
 {
    /* "Good ole rock.  Nuthin' beats rock." */
-   return(rock);
+   return(ROSHAMBO_BOT_rock);
 }
 
 int r226bot ()  /* R-P-S 20-20-60 */
@@ -168,21 +168,21 @@ int r226bot ()  /* R-P-S 20-20-60 */
 int rotatebot ()  /* Rotate R-P-S */
 {
    /* rotate choice each turn r -> p -> s */
-   return( my_history[0] % 3);
+   return( ROSHAMBO_BOT_my_history[0] % 3);
 }
 
 int copybot ()  /* Beat Last Move */
 {
    /* do whatever would have beat the opponent last turn */
-   return( (opp_history[opp_history[0]] + 1) % 3);
+   return( (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 1) % 3);
 }
 
 int switchbot ()  /* Always Switchin' */
 {
    /* never repeat the previous pick */
-   if ( my_history[my_history[0]] == rock ) {
+   if ( ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == ROSHAMBO_BOT_rock ) {
       return( biased_roshambo(0.0, 0.5) ); }
-   else if ( my_history[my_history[0]] == paper ) {
+   else if ( ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == ROSHAMBO_BOT_paper ) {
       return( biased_roshambo(0.5, 0.0) ); }
    else return( biased_roshambo(0.5, 0.5) );
 }
@@ -194,14 +194,14 @@ int freqbot ()  /* Beat Frequent Pick */
    int i, rcount, pcount, scount;
 
    rcount = 0;  pcount = 0;  scount = 0;
-   for (i = 1; i <= opp_history[0]; i++) {
-      if (opp_history[i] == rock)            { rcount++; }
-      else if (opp_history[i] == paper)      { pcount++; }
-      else /* opp_history[i] == scissors */  { scount++; }
+   for (i = 1; i <= ROSHAMBO_BOT_opp_history[0]; i++) {
+      if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_rock)            { rcount++; }
+      else if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_paper)      { pcount++; }
+      else /* ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_scissors */  { scount++; }
    }
-   if ( (rcount > pcount) && (rcount > scount) ) { return(paper); }
-   else if ( pcount > scount ) { return(scissors); }
-   else { return(rock); }
+   if ( (rcount > pcount) && (rcount > scount) ) { return(ROSHAMBO_BOT_paper); }
+   else if ( pcount > scount ) { return(ROSHAMBO_BOT_scissors); }
+   else { return(ROSHAMBO_BOT_rock); }
 }
 
 int freqbot2 ()  /* Beat Frequent Pick (again) */
@@ -212,17 +212,17 @@ int freqbot2 ()  /* Beat Frequent Pick (again) */
    static int rcount, pcount, scount;
    int opp_last;
 
-   if( opp_history[0] == 0 ) {
+   if( ROSHAMBO_BOT_opp_history[0] == 0 ) {
       rcount = 0;  pcount = 0;  scount = 0;  }
    else {
-      opp_last = opp_history[opp_history[0]];
-      if ( opp_last == rock)          { rcount++; }
-      else if ( opp_last == paper)    { pcount++; }
-      else /* opp_last == scissors */ { scount++; }
+      opp_last = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]];
+      if ( opp_last == ROSHAMBO_BOT_rock)          { rcount++; }
+      else if ( opp_last == ROSHAMBO_BOT_paper)    { pcount++; }
+      else /* opp_last == ROSHAMBO_BOT_scissors */ { scount++; }
    }
-   if ( (rcount > pcount) && (rcount > scount) ) { return(paper); }
-   else if ( pcount > scount ) { return(scissors); }
-   else { return(rock); }
+   if ( (rcount > pcount) && (rcount > scount) ) { return(ROSHAMBO_BOT_paper); }
+   else if ( pcount > scount ) { return(ROSHAMBO_BOT_scissors); }
+   else { return(ROSHAMBO_BOT_rock); }
 }
 
 int pibot ()  /* Pi bot */
@@ -263,7 +263,7 @@ int pibot ()  /* Pi bot */
  6,4,9,3,9,3,1,9,2,5,5,0,6,0,4,0,0,9,2,7,7,0,1,6,7,1,1,3,9,0,0,9,8,4,8,8,2,4,0,1};
 
    /* corrected code courtesy of Michael Callahan */
-   if (my_history[0] == 0) { index = 0; }
+   if (ROSHAMBO_BOT_my_history[0] == 0) { index = 0; }
    else {
       index = (index + 1) % 1200;
       while (pi_table[index] == 0) { index++; }
@@ -275,9 +275,9 @@ int pibot ()  /* Pi bot */
 int switchalot ()  /* Switch A Lot */
 {
    /* seldom repeat the previous pick */
-   if ( my_history[my_history[0]] == rock ) {
+   if ( ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == ROSHAMBO_BOT_rock ) {
       return( biased_roshambo(0.12, 0.44) ); }
-   else if ( my_history[my_history[0]] == paper ) {
+   else if ( ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == ROSHAMBO_BOT_paper ) {
       return( biased_roshambo(0.44, 0.12) ); }
    else return( biased_roshambo(0.44, 0.44) );
 }
@@ -289,13 +289,13 @@ int flatbot3 ()  /* Flat bot */
    int mylm, choice;
 
    choice = 0;
-   if ( my_history[0] == 0 ) {
+   if ( ROSHAMBO_BOT_my_history[0] == 0 ) {
       rc = 0; pc = 0; sc = 0; }
    else {
-      mylm = my_history[my_history[0]];
-      if (mylm == rock)            { rc++; }
-      else if (mylm == paper)      { pc++; }
-      else /* mylm == scissors */  { sc++; }
+      mylm = ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]];
+      if (mylm == ROSHAMBO_BOT_rock)            { rc++; }
+      else if (mylm == ROSHAMBO_BOT_paper)      { pc++; }
+      else /* mylm == ROSHAMBO_BOT_scissors */  { sc++; }
    }
    if ((rc < pc) && (rc < sc)) {
       choice = biased_roshambo(0.8, 0.1); }
@@ -323,26 +323,26 @@ int antiflatbot ()  /* Anti-Flat bot */
    int opplm, choice;
 
    choice = 0;
-   if ( opp_history[0] == 0 ) {
+   if ( ROSHAMBO_BOT_opp_history[0] == 0 ) {
       rc = 0; pc = 0; sc = 0; }
    else {
-      opplm = opp_history[opp_history[0]];
-      if (opplm == rock)           { rc++; }
-      else if (opplm == paper)      { pc++; }
-      else /* opplm == scissors */  { sc++; }
+      opplm = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]];
+      if (opplm == ROSHAMBO_BOT_rock)           { rc++; }
+      else if (opplm == ROSHAMBO_BOT_paper)      { pc++; }
+      else /* opplm == ROSHAMBO_BOT_scissors */  { sc++; }
    }
    if ((rc < pc) && (rc < sc)) {
-      choice = paper; }
+      choice = ROSHAMBO_BOT_paper; }
    if ((pc < rc) && (pc < sc)) {
-      choice = scissors; }
+      choice = ROSHAMBO_BOT_scissors; }
    if ((sc < rc) && (sc < pc)) {
-      choice = rock; }
+      choice = ROSHAMBO_BOT_rock; }
    if ((rc == pc) && (rc < sc)) {
-      choice = paper; }
+      choice = ROSHAMBO_BOT_paper; }
    if ((rc == sc) && (rc < pc)) {
-      choice = rock; }
+      choice = ROSHAMBO_BOT_rock; }
    if ((pc == sc) && (pc < rc)) {
-      choice = scissors; }
+      choice = ROSHAMBO_BOT_scissors; }
    if ((rc == pc) && (rc == sc)) {
       choice = random() % 3; }
    /* printf("[%d %d %d: %d]", rc, pc, sc, choice); */
@@ -354,9 +354,9 @@ int foxtrotbot ()  /* Foxtrot bot */
    /* set pattern: rand prev+2 rand prev+1 rand prev+0, repeat */
 
    int turn;
-   turn = my_history[0] + 1;
+   turn = ROSHAMBO_BOT_my_history[0] + 1;
    if ( turn % 2 ) { return( random() % 3 ); }
-   else { return( (my_history[turn-1] + turn) % 3 ); }
+   else { return( (ROSHAMBO_BOT_my_history[turn-1] + turn) % 3 ); }
 }
 
 int debruijn81 ()  /* De Bruijn string */
@@ -391,7 +391,7 @@ int debruijn81 ()  /* De Bruijn string */
  2,1,0,1,0,1,2,0,1,0,2,1,0,2,0,2,1,1,1,0,0,2,2,2,0,1,1,2,2,1,2,0,0,0,1,0,1,2,1,0};
 
    /* corrected code courtesy of Michael Callahan */
-   return(db_table[my_history[0] % 1000]);
+   return(db_table[ROSHAMBO_BOT_my_history[0] % 1000]);
 }
 
 int textbot ()  /* Text bot */
@@ -427,7 +427,7 @@ int textbot ()  /* Text bot */
  1,2,0,0,2,1,2,1,0,0,2,2,0,2,2,2,2,1,2,0,2,2,2,2,2,2,0,1,1,0,2,2,2,2,2,0,1,1,2,2};
 
    /* corrected code courtesy of Michael Callahan */
-   return(db_table[my_history[0] % 1000]);
+   return(db_table[ROSHAMBO_BOT_my_history[0] % 1000]);
 }
 
 int antirotnbot ()  /* Anti-rotn bot */
@@ -440,16 +440,16 @@ int antirotnbot ()  /* Anti-rotn bot */
    static int no, up, dn, score;
    int mv, diff, diff2, small, med, large;
 
-   mv = opp_history[0];
+   mv = ROSHAMBO_BOT_opp_history[0];
    if (mv == 0) {
       no = 0; up = 0; dn = 0; score = 0;
    }
    else {
-      diff = (my_history[mv] - opp_history[mv] + 3) % 3;
+      diff = (ROSHAMBO_BOT_my_history[mv] - ROSHAMBO_BOT_opp_history[mv] + 3) % 3;
       if ( diff == 1 ) { score++; }
       if ( diff == 2 ) { score--; }
       if (mv > 1) {
-	 diff = (opp_history[mv] - opp_history[mv-1] + 3) % 3;
+	 diff = (ROSHAMBO_BOT_opp_history[mv] - ROSHAMBO_BOT_opp_history[mv-1] + 3) % 3;
 	 if (diff == 0) { no++; }
 	 if (diff == 1) { up++; }
 	 if (diff == 2) { dn++; }
@@ -457,7 +457,7 @@ int antirotnbot ()  /* Anti-rotn bot */
    }
 
    /* fail-safe at 4% of match length */
-   if ( score < -trials/25 ) {
+   if ( score < -ROSHAMBO_BOT_trials/25 ) {
       return(random() % 3); }
 
    if ((no == up) && (no == dn)) {
@@ -484,41 +484,41 @@ int antirotnbot ()  /* Anti-rotn bot */
 
    if (diff < diff2) { /* clear maximum */
       if ((no > up) && (no > dn)) {
-	 return((opp_history[opp_history[0]] + 1) % 3); }
+	 return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 1) % 3); }
       if ((up > no) && (up > dn)) {
-	 return((opp_history[opp_history[0]] + 2) % 3); }
+	 return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 2) % 3); }
       if ((dn > no) && (dn > up)) {
-	 return(opp_history[opp_history[0]]); }
+	 return(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]); }
    }
    else if (diff > diff2) { /* clear minimum */
       if ((dn < up) && (dn < no)) {
-	 return((opp_history[opp_history[0]] + 1) % 3); }
+	 return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 1) % 3); }
       if ((up < dn) && (up < no)) {
-	 return(opp_history[opp_history[0]]); }
+	 return(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]); }
       if ((no < dn) && (no < up)) {
-	 return((opp_history[opp_history[0]] + 2) % 3); }
+	 return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 2) % 3); }
    }
    else if (diff == diff2) {
       if ((no > up) && (up > dn)) {
-	 return((opp_history[opp_history[0]] + 1) % 3); }
+	 return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 1) % 3); }
       if ((dn > up) && (up > no)) {
 	 if (flip_biased_coin(0.5)) {
-	    return(opp_history[opp_history[0]]); }
-	 else { return((opp_history[opp_history[0]] + 2) % 3); }
+	    return(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]); }
+	 else { return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 2) % 3); }
       }
       if ((dn > no) && (no > up)) {
-	 return(opp_history[opp_history[0]]); }
+	 return(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]); }
       if ((up > no) && (no > dn)) {
 	 if (flip_biased_coin(0.5)) {
-	    return((opp_history[opp_history[0]] + 1) % 3); }
-	 else { return((opp_history[opp_history[0]] + 2) % 3); }
+	    return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 1) % 3); }
+	 else { return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 2) % 3); }
       }
       if ((up > dn) && (dn > no)) {
-	 return((opp_history[opp_history[0]] + 2) % 3); }
+	 return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 2) % 3); }
       if ((no > dn) && (dn > up)) {
 	 if (flip_biased_coin(0.5)) {
-	    return(opp_history[opp_history[0]]); }
-	 else { return((opp_history[opp_history[0]] + 1) % 3); }
+	    return(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]); }
+	 else { return((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] + 1) % 3); }
       }
    }
    printf("Error in antirotnbot decision tree!\n");
@@ -533,13 +533,13 @@ int driftbot ()  /* Copy-drift bot */
    static int gear;
    int mv, throw;
 
-   mv = my_history[0];
+   mv = ROSHAMBO_BOT_my_history[0];
    if (mv == 0) { 
       gear = 0;
       throw = random() % 3; }
    else {
       if (flip_biased_coin(0.5)) {    
-	 throw = opp_history[mv]; }
+	 throw = ROSHAMBO_BOT_opp_history[mv]; }
       else { throw = random() % 3; }
       if ( mv % 111 == 0 ) {
 	 gear += 2; }
@@ -555,13 +555,13 @@ int addshiftbot3 ()  /* Add-react bot */
    static int gear, recent, score;
    int mv, diff;
 
-   mv = my_history[0];
+   mv = ROSHAMBO_BOT_my_history[0];
    if (mv == 0) {
       gear = 0; recent = 0; score = 0;
       return( random() % 3 );
    }
    else {
-      diff = (my_history[mv] - opp_history[mv] + 3) % 3;
+      diff = (ROSHAMBO_BOT_my_history[mv] - ROSHAMBO_BOT_opp_history[mv] + 3) % 3;
       if ( diff == 1 ) { score++; }
       if ( diff == 2 ) { score--; }
       recent++;
@@ -577,7 +577,7 @@ int addshiftbot3 ()  /* Add-react bot */
    if ( flip_biased_coin(0.2) ) {
       return( random() % 3 ); }
    else {
-      return((my_history[mv] + opp_history[mv] + gear) % 3);
+      return((ROSHAMBO_BOT_my_history[mv] + ROSHAMBO_BOT_opp_history[mv] + gear) % 3);
    }
 }
 
@@ -589,7 +589,7 @@ int adddriftbot2 ()  /* Add-drift bot */
    static int gear;
    int mv;
 
-   mv = my_history[0];
+   mv = ROSHAMBO_BOT_my_history[0];
    if (mv == 0) {
       gear = 0;
       return( random() % 3 );
@@ -599,7 +599,7 @@ int adddriftbot2 ()  /* Add-drift bot */
    if ( flip_biased_coin(0.5) ) {
       return( random() % 3 ); }
    else {
-      return((my_history[mv] + opp_history[mv] + gear) % 3);
+      return((ROSHAMBO_BOT_my_history[mv] + ROSHAMBO_BOT_opp_history[mv] + gear) % 3);
    }
 }
 /**********************************************************************/
@@ -766,8 +766,8 @@ int adddriftbot2 ()  /* Add-drift bot */
    Dan Egnor
 */
 
-#define will_beat(play) ("\001\002\000"[play])
-#define will_lose_to(play) ("\002\000\001"[play])
+#define ROSHAMBO_BOT_will_beat(play) ("\001\002\000"[play])
+#define ROSHAMBO_BOT_will_lose_to(play) ("\002\000\001"[play])
 
 /* ------------------------------------------------------------------------- */
 
@@ -782,18 +782,18 @@ static int match_single(int i,int num,int *history) {
 
 static int match_both(int i,int num) {
     int j;
-    for (j = 0; j < i && opp_history[num-j] == opp_history[i-j]
-              && my_history[num-j]  == my_history[i-j]; ++j) ;
+    for (j = 0; j < i && ROSHAMBO_BOT_opp_history[num-j] == ROSHAMBO_BOT_opp_history[i-j]
+              && ROSHAMBO_BOT_my_history[num-j]  == ROSHAMBO_BOT_my_history[i-j]; ++j) ;
     return j;
 }
 
 static void do_history(int age,int best[3]) {
-    const int num = my_history[0];
+    const int num = ROSHAMBO_BOT_my_history[0];
     int best_length[3],i,j,w;
 
     for (w = 0; w < 3; ++w) best[w] = best_length[w] = 0; 
     for (i = num - 1; i > num - age && i > best_length[my_hist]; --i) {
-        j = match_single(i,num,my_history);
+        j = match_single(i,num,ROSHAMBO_BOT_my_history);
         if (j > best_length[my_hist]) {
             best_length[my_hist] = j;
             best[my_hist] = i;
@@ -802,7 +802,7 @@ static void do_history(int age,int best[3]) {
     }
 
     for (i = num - 1; i > num - age && i > best_length[opp_hist]; --i) {
-        j = match_single(i,num,opp_history);
+        j = match_single(i,num,ROSHAMBO_BOT_opp_history);
         if (j > best_length[opp_hist]) {
             best_length[opp_hist] = j;
             best[opp_hist] = i;
@@ -822,23 +822,23 @@ static void do_history(int age,int best[3]) {
 
 /* ------------------------------------------------------------------------- */
 
-struct stats {
-    int sum[1 + trials][3];
+struct ROSHAMBO_BOT_stats {
+    int sum[1 + ROSHAMBO_BOT_trials][3];
     int age;
 };
 
-static void reset_stats(struct stats *st) {
+static void reset_stats(struct ROSHAMBO_BOT_stats *st) {
     int i;
     st->age = 0;
     for (i = 0; i < 3; ++i) st->sum[st->age][i] = 0;
 }
 
-static void add_stats(struct stats *st,int i,int delta) {
+static void add_stats(struct ROSHAMBO_BOT_stats *st,int i,int delta) {
     st->sum[st->age][i] += delta;
 }
 
-static void next_stats(struct stats *st) {
-    if (st->age < trials) {
+static void next_stats(struct ROSHAMBO_BOT_stats *st) {
+    if (st->age < ROSHAMBO_BOT_trials) {
         int i;
         ++(st->age);
         for (i = 0; i < 3; ++i) 
@@ -846,7 +846,7 @@ static void next_stats(struct stats *st) {
     }
 }
 
-static int max_stats(const struct stats *st,int age,int *which,int *score) {
+static int max_stats(const struct ROSHAMBO_BOT_stats *st,int age,int *which,int *score) {
     int i;
     *which = -1;
     for (i = 0; i < 3; ++i) {
@@ -866,30 +866,30 @@ static int max_stats(const struct stats *st,int age,int *which,int *score) {
 
 /* ------------------------------------------------------------------------- */
 
-struct predict {
-    struct stats st;
+struct ROSHAMBO_BOT_predict {
+    struct ROSHAMBO_BOT_stats st;
     int last;
 };
 
-static void reset_predict(struct predict *pred) {
+static void reset_predict(struct ROSHAMBO_BOT_predict *pred) {
     reset_stats(&pred->st);
     pred->last = -1;
 }
 
 /* last: opponent's last move (-1 if none)
  | guess: algorithm's prediction of opponent's next move */
-static void do_predict(struct predict *pred,int last,int guess) {
+static void do_predict(struct ROSHAMBO_BOT_predict *pred,int last,int guess) {
     if (-1 != last) {
         const int diff = (3 + last - pred->last) % 3;
-        add_stats(&pred->st,will_beat(diff),1);
-        add_stats(&pred->st,will_lose_to(diff),-1);
+        add_stats(&pred->st,ROSHAMBO_BOT_will_beat(diff),1);
+        add_stats(&pred->st,ROSHAMBO_BOT_will_lose_to(diff),-1);
         next_stats(&pred->st);
     }
 
     pred->last = guess;
 }
 
-static void scan_predict(struct predict *pred,int age,int *move,int *score) {
+static void scan_predict(struct ROSHAMBO_BOT_predict *pred,int age,int *move,int *score) {
     int i;
     if (max_stats(&pred->st,age,&i,score)) *move = ((pred->last + i) % 3);
 }
@@ -897,22 +897,22 @@ static void scan_predict(struct predict *pred,int age,int *move,int *score) {
 /* ------------------------------------------------------------------------- */
 
 static const int ages[] = { 1000, 100, 10, 5, 2, 1 };
-#define num_ages (sizeof(ages) / sizeof(ages[0]))
+#define ROSHAMBO_BOT_num_ages (sizeof(ages) / sizeof(ages[0]))
 
-struct iocaine {
-    struct predict pr_history[num_ages][3][2],pr_freq[num_ages][2];
-    struct predict pr_fixed,pr_random,pr_meta[num_ages];
-    struct stats stats[2];
+struct ROSHAMBO_BOT_iocaine {
+    struct ROSHAMBO_BOT_predict pr_history[ROSHAMBO_BOT_num_ages][3][2],pr_freq[ROSHAMBO_BOT_num_ages][2];
+    struct ROSHAMBO_BOT_predict pr_fixed,pr_random,pr_meta[ROSHAMBO_BOT_num_ages];
+    struct ROSHAMBO_BOT_stats stats[2];
 };
 
-static int iocaine(struct iocaine *i) {
-    const int num = my_history[0];
-    const int last = (num > 0) ? opp_history[num] : -1;
+static int iocaine(struct ROSHAMBO_BOT_iocaine *i) {
+    const int num = ROSHAMBO_BOT_my_history[0];
+    const int last = (num > 0) ? ROSHAMBO_BOT_opp_history[num] : -1;
     const int guess = biased_roshambo(1.0/3.0,1.0/3.0);
     int w,a,p;
 
     if (0 == num) {
-        for (a = 0; a < num_ages; ++a) {
+        for (a = 0; a < ROSHAMBO_BOT_num_ages; ++a) {
             reset_predict(&i->pr_meta[a]);
             for (p = 0; p < 2; ++p) {
                 for (w = 0; w < 3; ++w)
@@ -924,11 +924,11 @@ static int iocaine(struct iocaine *i) {
         reset_predict(&i->pr_random);
         reset_predict(&i->pr_fixed);
     } else {
-        add_stats(&i->stats[0],my_history[num],1);
-        add_stats(&i->stats[1],opp_history[num],1);
+        add_stats(&i->stats[0],ROSHAMBO_BOT_my_history[num],1);
+        add_stats(&i->stats[1],ROSHAMBO_BOT_opp_history[num],1);
     }
 
-    for (a = 0; a < num_ages; ++a) {
+    for (a = 0; a < ROSHAMBO_BOT_num_ages; ++a) {
         int best[3];
         do_history(ages[a],best);
         for (w = 0; w < 3; ++w) {
@@ -938,8 +938,8 @@ static int iocaine(struct iocaine *i) {
                 do_predict(&i->pr_history[a][w][1],last,guess);
                 continue;
             }
-            do_predict(&i->pr_history[a][w][0],last,my_history[b+1]);
-            do_predict(&i->pr_history[a][w][1],last,opp_history[b+1]);
+            do_predict(&i->pr_history[a][w][0],last,ROSHAMBO_BOT_my_history[b+1]);
+            do_predict(&i->pr_history[a][w][1],last,ROSHAMBO_BOT_opp_history[b+1]);
         }
 
         for (p = 0; p < 2; ++p) {
@@ -954,9 +954,9 @@ static int iocaine(struct iocaine *i) {
     do_predict(&i->pr_random,last,guess);
     do_predict(&i->pr_fixed,last,0);
 
-    for (a = 0; a < num_ages; ++a) {
+    for (a = 0; a < ROSHAMBO_BOT_num_ages; ++a) {
         int aa,score = -1,move = -1;
-        for (aa = 0; aa < num_ages; ++aa) {
+        for (aa = 0; aa < ROSHAMBO_BOT_num_ages; ++aa) {
             for (p = 0; p < 2; ++p) {
                 for (w = 0; w < 3; ++w)
                     scan_predict(&i->pr_history[aa][w][p],
@@ -972,8 +972,8 @@ static int iocaine(struct iocaine *i) {
 
     {
         int score = -1,move = -1;
-        for (a = 0; a < num_ages; ++a)
-            scan_predict(&i->pr_meta[a],trials,&move,&score);
+        for (a = 0; a < ROSHAMBO_BOT_num_ages; ++a)
+            scan_predict(&i->pr_meta[a],ROSHAMBO_BOT_trials,&move,&score);
         return move;
     }
 }
@@ -982,7 +982,7 @@ static int iocaine(struct iocaine *i) {
 
 int iocainebot(void)
 {
-    static struct iocaine p;
+    static struct ROSHAMBO_BOT_iocaine p;
     return iocaine(&p);
 }
 /**********************************************************************/
@@ -1065,54 +1065,54 @@ int iocainebot(void)
  *    May the best program (more likely Dan's than mine :) win!
  */
 
-#define pwill_beat(x) ("\001\002\000"[x])
+#define ROSHAMBO_BOT_pwill_beat(x) ("\001\002\000"[x])
 
 typedef struct {
    long (*fcn)(void *state);
    void *state;
-} jlmbot;
+} ROSHAMBO_BOT_jlmbot;
 
 typedef struct {
    int both, my, opp, num;
-} jlmhistret;
+} ROSHAMBO_BOT_jlmhistret;
 
-static void jlm_history(jlmhistret *s) {
+static void jlm_history(ROSHAMBO_BOT_jlmhistret *s) {
     int besta,bestb,bestc,i,j,num;
     /* a is both history, b is my history, c is opponent history. */
 
-    if (s->num == my_history[0]) return;
-    s->num = num = my_history[0];
+    if (s->num == ROSHAMBO_BOT_my_history[0]) return;
+    s->num = num = ROSHAMBO_BOT_my_history[0];
     s->both = s->my = s->opp = besta = bestb = bestc = 0;
     for (i = num - 1; i > besta; --i) {
         for (j = 0; j < i 
-                && opp_history[num - j] == opp_history[i - j]
-                && my_history[num - j] == my_history[i - j]; ++j) { } 
+                && ROSHAMBO_BOT_opp_history[num - j] == ROSHAMBO_BOT_opp_history[i - j]
+                && ROSHAMBO_BOT_my_history[num - j] == ROSHAMBO_BOT_my_history[i - j]; ++j) { } 
         if (j > besta) { besta = j; s->both = i; }
         if (j > bestb) { bestb = j; s->my = i; }
         if (j > bestc) { bestc = j; s->opp = i; }
-        if (opp_history[num-j] != opp_history[i - j]) {
-            for ( ; j < i && my_history[num-j] == my_history[i-j]; ++j) { }
+        if (ROSHAMBO_BOT_opp_history[num-j] != ROSHAMBO_BOT_opp_history[i - j]) {
+            for ( ; j < i && ROSHAMBO_BOT_my_history[num-j] == ROSHAMBO_BOT_my_history[i-j]; ++j) { }
             if (j > bestb) { bestb = j; s->my = i; }
         }
-        else /* j >= i || my_history[num-j] != my_history[i - j] */ {
-            for ( ; j < i && opp_history[num-j] == opp_history[i-j]; ++j) { }
+        else /* j >= i || ROSHAMBO_BOT_my_history[num-j] != ROSHAMBO_BOT_my_history[i - j] */ {
+            for ( ; j < i && ROSHAMBO_BOT_opp_history[num-j] == ROSHAMBO_BOT_opp_history[i-j]; ++j) { }
             if (j > bestc) { bestc = j; s->opp = i; }
         }
     }
 }
 
-static long jlmhist1(jlmhistret *s) {
+static long jlmhist1(ROSHAMBO_BOT_jlmhistret *s) {
         jlm_history(s);
         if (0 == s->opp) return biased_roshambo(1.0/3.0,1.0/3.0);
-        return pwill_beat(opp_history[s->opp + 1]) | 
-                (pwill_beat(my_history[s->my + 1]) << 16) ;
+        return ROSHAMBO_BOT_pwill_beat(ROSHAMBO_BOT_opp_history[s->opp + 1]) | 
+                (ROSHAMBO_BOT_pwill_beat(ROSHAMBO_BOT_my_history[s->my + 1]) << 16) ;
 }
 
-static long jlmhist0(jlmhistret *s) {
+static long jlmhist0(ROSHAMBO_BOT_jlmhistret *s) {
         jlm_history(s);
         if (0 == s->both) return biased_roshambo(1.0/3.0,1.0/3.0);
-        return pwill_beat(opp_history[s->both + 1]) | 
-                (pwill_beat(my_history[s->both + 1]) << 16) ;
+        return ROSHAMBO_BOT_pwill_beat(ROSHAMBO_BOT_opp_history[s->both + 1]) | 
+                (ROSHAMBO_BOT_pwill_beat(ROSHAMBO_BOT_my_history[s->both + 1]) << 16) ;
 }
 
 static long jlmrand(void *throwaway) {  
@@ -1127,35 +1127,35 @@ typedef struct {
   int (*my_stats)[3], (*opp_stats)[3];
   int (*my_ostats)[3], (*opp_ostats)[3];
   int *opp_guess, *my_guess;
-  jlmbot *to_beat;
-} jocaine_state;
+  ROSHAMBO_BOT_jlmbot *to_beat;
+} ROSHAMBO_BOT_jocaine_state;
 
-static long apply_jocaine(jocaine_state *);
+static long apply_jocaine(ROSHAMBO_BOT_jocaine_state *);
 
 int phasenbott()
 {
    typedef long (*fcn)(void *state);
    typedef int arr4[4];
-   static jlmhistret h;
+   static ROSHAMBO_BOT_jlmhistret h;
    static arr4 my_last, opp_last, opp_guess, my_guess;
    static int my_stats[4][3], opp_stats[4][3], my_ostats[4][3], 
                 opp_ostats[4][3];
    static int sy_last, spp_last, spp_guess, sy_guess;
    static int sy_stats[3], spp_stats[3], sy_ostats[3], spp_ostats[3];
-   static jlmbot hb = { (fcn)jlmhist0,  &h};
-   static jocaine_state t = { 1, &sy_last, &spp_last,
+   static ROSHAMBO_BOT_jlmbot hb = { (fcn)jlmhist0,  &h};
+   static ROSHAMBO_BOT_jocaine_state t = { 1, &sy_last, &spp_last,
                               &sy_stats, &spp_stats, &sy_ostats, &spp_ostats,
                               &spp_guess, &sy_guess, &hb };
-   static jlmbot ba[4] = {{(fcn)jlmhist1, &h}, {(fcn)jlmhist0, &h}, 
+   static ROSHAMBO_BOT_jlmbot ba[4] = {{(fcn)jlmhist1, &h}, {(fcn)jlmhist0, &h}, 
                           {(fcn)jlmrand, 0}, {(fcn)apply_jocaine, &t}};
-   static jocaine_state s = { 4, my_last, opp_last,
+   static ROSHAMBO_BOT_jocaine_state s = { 4, my_last, opp_last,
                               my_stats, opp_stats, my_ostats, opp_ostats,
                               opp_guess, my_guess, ba};
    return apply_jocaine(&s) & 0xFFFF;
 }
 
-static long apply_jocaine(jocaine_state *s) {
-        const int num = my_history[0];
+static long apply_jocaine(ROSHAMBO_BOT_jocaine_state *s) {
+        const int num = ROSHAMBO_BOT_my_history[0];
         long b;
         int i,my_most,opp_most, h;
         int my_omost, opp_omost;
@@ -1180,10 +1180,10 @@ static long apply_jocaine(jocaine_state *s) {
         s->my_guess[h] = b & 0xFFFF;
         s->opp_guess[h] = b >> 16;
 
-        s->my_stats[h][(3 + opp_history[num] - s->my_last[h]) % 3]++;
-        s->opp_stats[h][(3 + opp_history[num] - s->opp_last[h]) % 3]++;
-        s->my_ostats[h][(3 + my_history[num] - s->opp_last[h]) % 3]++;
-        s->opp_ostats[h][(3 + my_history[num] - s->my_last[h]) % 3]++;
+        s->my_stats[h][(3 + ROSHAMBO_BOT_opp_history[num] - s->my_last[h]) % 3]++;
+        s->opp_stats[h][(3 + ROSHAMBO_BOT_opp_history[num] - s->opp_last[h]) % 3]++;
+        s->my_ostats[h][(3 + ROSHAMBO_BOT_my_history[num] - s->opp_last[h]) % 3]++;
+        s->opp_ostats[h][(3 + ROSHAMBO_BOT_my_history[num] - s->my_last[h]) % 3]++;
 
         s->my_last[h] = s->my_guess[h];
         s->opp_last[h] = s->opp_guess[h];
@@ -1204,15 +1204,15 @@ static long apply_jocaine(jocaine_state *s) {
             }
 
         if (s->opp_stats[hpp_most][opp_most] >= s->my_stats[hy_most][my_most])
-                b = pwill_beat((s->opp_guess[hpp_most] + opp_most) % 3);
+                b = ROSHAMBO_BOT_pwill_beat((s->opp_guess[hpp_most] + opp_most) % 3);
         else
-                b = pwill_beat((s->my_guess[hy_most] + my_most) % 3);
+                b = ROSHAMBO_BOT_pwill_beat((s->my_guess[hy_most] + my_most) % 3);
 
         if (s->opp_ostats[hpp_omost][opp_omost] 
                         >= s->my_ostats[hy_omost][my_omost])
-                b |= pwill_beat((s->my_guess[hpp_omost] + opp_omost) % 3) << 16;
+                b |= ROSHAMBO_BOT_pwill_beat((s->my_guess[hpp_omost] + opp_omost) % 3) << 16;
         else
-                b |= pwill_beat((s->opp_guess[hy_omost] + my_omost) % 3) << 16;
+                b |= ROSHAMBO_BOT_pwill_beat((s->opp_guess[hy_omost] + my_omost) % 3) << 16;
 
         return b;
 }
@@ -1398,58 +1398,58 @@ int halbot(void)
     *      Set this to a non-zero value to emit an warning message if the
     *      algorithm averages more than one millisecond per move.
     */
-   #define   ERROR      0
+   #define   ROSHAMBO_BOT_ERROR      0
    /*
     *      These defines are the three heuristic parameters that can be modified
-    *      to alter performance.  BELIEVE gives the number of times a context
-    *      must be observed before being used for prediction, HISTORY gives the
+    *      to alter performance.  ROSHAMBO_BOT_BELIEVE gives the number of times a context
+    *      must be observed before being used for prediction, ROSHAMBO_BOT_HISTORY gives the
     *      maximum context size to observe (we're limited by time, not memory),
-    *      and WINDOW gives the size of the sliding window, 0 being infinite.
+    *      and ROSHAMBO_BOT_WINDOW gives the size of the sliding window, 0 being infinite.
     *
-    *      - BELIEVE>=1
-    *      - HISTORY>=1
-    *      - WINDOW>=HISTORY or 0 for infinite
+    *      - ROSHAMBO_BOT_BELIEVE>=1
+    *      - ROSHAMBO_BOT_HISTORY>=1
+    *      - ROSHAMBO_BOT_WINDOW>=ROSHAMBO_BOT_HISTORY or 0 for infinite
     */
-   #define   BELIEVE   1
-   #define   HISTORY   21
-   #define   WINDOW   200
+   #define   ROSHAMBO_BOT_BELIEVE   1
+   #define   ROSHAMBO_BOT_HISTORY   21
+   #define   ROSHAMBO_BOT_WINDOW   200
    /*
     *      This define just makes the code neater (huh, as if).
     */
-   #define   COUNT      trie[context[i].node].move
-   #define   SCOUNT   trie[sorted[i].node].move
+   #define   ROSHAMBO_BOT_COUNT      trie[context[i].node].move
+   #define   ROSHAMBO_BOT_SCOUNT   trie[sorted[i].node].move
    /*
     *      These macros returns the maximum/minimum values of two expressions.
     */
-   #define   MAX(a,b)   (((a)>(b))?(a):(b))
-   #define   MIN(a,b)   (((a)<(b))?(a):(b))
+   #define   ROSHAMBO_BOT_MAX(a,b)   (((a)>(b))?(a):(b))
+   #define   ROSHAMBO_BOT_MIN(a,b)   (((a)<(b))?(a):(b))
    /*
     *      Each node of the trie contains frequency information about the moves
     *      made at the context represented by the node, and where the sequent
     *      nodes are in the array.
     */
-   typedef struct S_NODE {
+   typedef struct ROSHAMBO_BOT_S_NODE {
       short int total;
       short int move[3];
       int next[3];
-   } NODE;
+   } ROSHAMBO_BOT_NODE;
    /*
     *      The context array contains information about contexts of various
     *      lengths, and this is used to select a context to make the prediction.
     */
-   typedef struct S_CONTEXT {
+   typedef struct ROSHAMBO_BOT_S_CONTEXT {
       int worst;
       int best;
       int seen;
       int size;
       int node;
-   } CONTEXT;
+   } ROSHAMBO_BOT_CONTEXT;
    /*
     *      This is the only external information we have about our opponent;
     *      it's a history of the game so far.
     */
-   extern int my_history[];
-   extern int opp_history[];
+   extern int ROSHAMBO_BOT_my_history[];
+   extern int ROSHAMBO_BOT_opp_history[];
    /*
     *      We declare all variables as statics because we want most of them to
     *      be persistent.
@@ -1457,11 +1457,11 @@ int halbot(void)
    static int move=-1;
    static int last_move=-1;
    static int random_move=-1;
-   static NODE *trie=NULL;
+   static ROSHAMBO_BOT_NODE *trie=NULL;
    static int trie_size=0;
    static int context_size=0;
-   static CONTEXT *context=NULL;
-   static CONTEXT *sorted=NULL;
+   static ROSHAMBO_BOT_CONTEXT *context=NULL;
+   static ROSHAMBO_BOT_CONTEXT *sorted=NULL;
    static int **memory=NULL;
    static int remember=0;
    static struct timeval start;
@@ -1480,7 +1480,7 @@ int halbot(void)
    /*
     *      If this is the beginning of the game, set some things up.
     */
-   if(my_history[0]==0) {
+   if(ROSHAMBO_BOT_my_history[0]==0) {
       if(trie==NULL) {
          /*
           *      If this is the first game we've played, initialise the memory.
@@ -1489,19 +1489,19 @@ int halbot(void)
           *
           *      NB: We must allocate two elements for the context!
           */
-         context=(CONTEXT *)malloc(sizeof(CONTEXT)*(HISTORY+2));
+         context=(ROSHAMBO_BOT_CONTEXT *)malloc(sizeof(ROSHAMBO_BOT_CONTEXT)*(ROSHAMBO_BOT_HISTORY+2));
          assert(context);
-         sorted=(CONTEXT *)malloc(sizeof(CONTEXT)*(HISTORY+2));
+         sorted=(ROSHAMBO_BOT_CONTEXT *)malloc(sizeof(ROSHAMBO_BOT_CONTEXT)*(ROSHAMBO_BOT_HISTORY+2));
          assert(sorted);
-         if(WINDOW>0) {
-            memory=(int **)malloc(sizeof(int *)*WINDOW);
+         if(ROSHAMBO_BOT_WINDOW>0) {
+            memory=(int **)malloc(sizeof(int *)*ROSHAMBO_BOT_WINDOW);
             assert(memory);
-            for(i=0; i<WINDOW; ++i) {
-               memory[i]=(int *)malloc(sizeof(int)*(HISTORY+2));
+            for(i=0; i<ROSHAMBO_BOT_WINDOW; ++i) {
+               memory[i]=(int *)malloc(sizeof(int)*(ROSHAMBO_BOT_HISTORY+2));
                assert(memory[i]);
             }
          }
-         trie=(NODE *)malloc(sizeof(NODE));
+         trie=(ROSHAMBO_BOT_NODE *)malloc(sizeof(ROSHAMBO_BOT_NODE));
          assert(trie);
       }
       /*
@@ -1509,19 +1509,19 @@ int halbot(void)
        *      statistics of the root node.
        */
       trie_size=1;
-      trie[0]=(NODE){0,{0,0,0},{-1,-1,-1}};
+      trie[0]=(ROSHAMBO_BOT_NODE){0,{0,0,0},{-1,-1,-1}};
       /*
        *      Clear the memory matrix.
        */
-      for(i=0; i<WINDOW; ++i)
-         for(j=0; j<HISTORY+2; ++j)
+      for(i=0; i<ROSHAMBO_BOT_WINDOW; ++i)
+         for(j=0; j<ROSHAMBO_BOT_HISTORY+2; ++j)
             memory[i][j]=-1;
       /*
        *      Clear the context array.
        */
-      for(i=0; i<HISTORY+2; ++i) context[i]=(CONTEXT){0,0,0,0,0};
-      context[0]=(CONTEXT){0,0,0,-1,-1};
-      context[1]=(CONTEXT){0,0,0,0,0};
+      for(i=0; i<ROSHAMBO_BOT_HISTORY+2; ++i) context[i]=(ROSHAMBO_BOT_CONTEXT){0,0,0,0,0};
+      context[0]=(ROSHAMBO_BOT_CONTEXT){0,0,0,-1,-1};
+      context[1]=(ROSHAMBO_BOT_CONTEXT){0,0,0,0,0};
       /*
        *      Clear the variable we use to keep track of how long MegaHAL
        *      spends thinking.
@@ -1533,19 +1533,19 @@ int halbot(void)
     *      last turn, and update our list which decides which contexts give the
     *      best predictions.
     */
-   if(my_history[0]>0) {
+   if(ROSHAMBO_BOT_my_history[0]>0) {
       /*
        *      We begin by forgetting which contexts performed well in the
        *      distant past.
         */
-      if(WINDOW>0) for(i=1; i<context_size; ++i) {
-         if(WINDOW-i>0) {
-            if(memory[(remember+i-1)%WINDOW][i]>=0) {
-               if(memory[(remember+i-1)%WINDOW][i]==
-                  ((opp_history[my_history[0]-WINDOW+i-1]+1)%3))
+      if(ROSHAMBO_BOT_WINDOW>0) for(i=1; i<context_size; ++i) {
+         if(ROSHAMBO_BOT_WINDOW-i>0) {
+            if(memory[(remember+i-1)%ROSHAMBO_BOT_WINDOW][i]>=0) {
+               if(memory[(remember+i-1)%ROSHAMBO_BOT_WINDOW][i]==
+                  ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_WINDOW+i-1]+1)%3))
                      context[i].best-=1;
-               if(memory[(remember+i-1)%WINDOW][i]==
-                  ((opp_history[my_history[0]-WINDOW+i-1]+2)%3))
+               if(memory[(remember+i-1)%ROSHAMBO_BOT_WINDOW][i]==
+                  ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_WINDOW+i-1]+2)%3))
                      context[i].worst-=1;
                context[i].seen-=1;
             }
@@ -1554,7 +1554,7 @@ int halbot(void)
       /*
        *      Clear our dimmest memory.
        */
-      if(WINDOW>0) for(i=0; i<context_size; ++i)
+      if(ROSHAMBO_BOT_WINDOW>0) for(i=0; i<context_size; ++i)
          memory[remember][i]=-1;
       /*
        *      We then remember the contexts which performed the best most
@@ -1563,22 +1563,22 @@ int halbot(void)
       for(i=0; i<context_size; ++i) {
          if(context[i].node>=trie_size) continue;
          if(context[i].node==-1) continue;
-         if(trie[context[i].node].total>=BELIEVE) {
+         if(trie[context[i].node].total>=ROSHAMBO_BOT_BELIEVE) {
             for(j=0; j<3; ++j)
-               expected[j]=COUNT[(j+2)%3]-COUNT[(j+1)%3];
+               expected[j]=ROSHAMBO_BOT_COUNT[(j+2)%3]-ROSHAMBO_BOT_COUNT[(j+1)%3];
             last_move=0;
             for(j=1; j<3; ++j)
                if(expected[j]>expected[last_move])
                   last_move=j;
-            if(last_move==(opp_history[my_history[0]]+1)%3)
+            if(last_move==(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]+1)%3)
                context[i].best+=1;
-            if(last_move==(opp_history[my_history[0]]+2)%3)
+            if(last_move==(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]+2)%3)
                context[i].worst+=1;
             context[i].seen+=1;
-            if(WINDOW>0) memory[remember][i]=last_move;
+            if(ROSHAMBO_BOT_WINDOW>0) memory[remember][i]=last_move;
          }
       }
-      if(WINDOW>0) remember=(remember+1)%WINDOW;
+      if(ROSHAMBO_BOT_WINDOW>0) remember=(remember+1)%ROSHAMBO_BOT_WINDOW;
    }
    /*
     *      Clear the context to the node which always predicts at random, and
@@ -1589,23 +1589,23 @@ int halbot(void)
     *      We begin by forgetting the statistics we've previously gathered
     *      about the symbol which is now leaving the sliding window.
     */
-   if((WINDOW>0)&&(my_history[0]-WINDOW>0))
-      for(i=my_history[0]-WINDOW;
-         i<MIN(my_history[0]-WINDOW+HISTORY,my_history[0]); ++i) {
+   if((ROSHAMBO_BOT_WINDOW>0)&&(ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_WINDOW>0))
+      for(i=ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_WINDOW;
+         i<ROSHAMBO_BOT_MIN(ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_WINDOW+ROSHAMBO_BOT_HISTORY,ROSHAMBO_BOT_my_history[0]); ++i) {
       /*
        *      Find the node which corresponds to the context.
        */
       node=0;
-      for(j=MAX(my_history[0]-WINDOW,1); j<i; ++j) {
-         node=trie[node].next[opp_history[j]];
-         node=trie[node].next[my_history[j]];
+      for(j=ROSHAMBO_BOT_MAX(ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_WINDOW,1); j<i; ++j) {
+         node=trie[node].next[ROSHAMBO_BOT_opp_history[j]];
+         node=trie[node].next[ROSHAMBO_BOT_my_history[j]];
       }
       if((node<0)||(node>=trie_size))fprintf(stderr, "OUCH\n");
       /*
        *      Update the statistics of this node with the opponents move.
        */
       trie[node].total-=1;
-      trie[node].move[opp_history[i]]-=1;
+      trie[node].move[ROSHAMBO_BOT_opp_history[i]]-=1;
    }
    /*
     *      Build up a context array pointing at all the nodes in the trie
@@ -1613,48 +1613,48 @@ int halbot(void)
     *      history.  While doing this, update the statistics of the trie with
     *      the last move made by ourselves and our opponent.
     */
-#if(WINDOW>0)
-   for(i=my_history[0]; i>MAX(my_history[0]-MIN(WINDOW,HISTORY),0); --i) {
+#if(ROSHAMBO_BOT_WINDOW>0)
+   for(i=ROSHAMBO_BOT_my_history[0]; i>ROSHAMBO_BOT_MAX(ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_MIN(ROSHAMBO_BOT_WINDOW,ROSHAMBO_BOT_HISTORY),0); --i) {
 #else
-   for(i=my_history[0]; i>MAX(my_history[0]-HISTORY,0); --i) {
+   for(i=ROSHAMBO_BOT_my_history[0]; i>ROSHAMBO_BOT_MAX(ROSHAMBO_BOT_my_history[0]-ROSHAMBO_BOT_HISTORY,0); --i) {
 #endif
       /*
        *      Find the node which corresponds to the context.
        */
       node=0;
-      for(j=i; j<my_history[0]; ++j) {
-         node=trie[node].next[opp_history[j]];
-         node=trie[node].next[my_history[j]];
+      for(j=i; j<ROSHAMBO_BOT_my_history[0]; ++j) {
+         node=trie[node].next[ROSHAMBO_BOT_opp_history[j]];
+         node=trie[node].next[ROSHAMBO_BOT_my_history[j]];
       }
       if((node<0)||(node>=trie_size))fprintf(stderr, "OUCH\n");
       /*
        *      Update the statistics of this node with the opponents move.
        */
       trie[node].total+=1;
-      trie[node].move[opp_history[my_history[0]]]+=1;
+      trie[node].move[ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]]+=1;
       /*
        *      Move to this node, making sure that we've allocated it first.
        */
-      if(trie[node].next[opp_history[my_history[0]]]==-1) {
-         trie[node].next[opp_history[my_history[0]]]=trie_size;
+      if(trie[node].next[ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]]==-1) {
+         trie[node].next[ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]]=trie_size;
          trie_size+=1;
-         trie=(NODE *)realloc(trie,sizeof(NODE)*trie_size);
+         trie=(ROSHAMBO_BOT_NODE *)realloc(trie,sizeof(ROSHAMBO_BOT_NODE)*trie_size);
          assert(trie);
-         trie[trie_size-1]=(NODE){0,{0,0,0},{-1,-1,-1}};
+         trie[trie_size-1]=(ROSHAMBO_BOT_NODE){0,{0,0,0},{-1,-1,-1}};
       }
-      node=trie[node].next[opp_history[my_history[0]]];
+      node=trie[node].next[ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]];
       if((node<0)||(node>=trie_size))fprintf(stderr, "OUCH\n");
       /*
        *      Move to this node, making sure that we've allocated it first.
        */
-      if(trie[node].next[my_history[my_history[0]]]==-1) {
-         trie[node].next[my_history[my_history[0]]]=trie_size;
+      if(trie[node].next[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]]==-1) {
+         trie[node].next[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]]=trie_size;
          trie_size+=1;
-         trie=(NODE *)realloc(trie,sizeof(NODE)*trie_size);
+         trie=(ROSHAMBO_BOT_NODE *)realloc(trie,sizeof(ROSHAMBO_BOT_NODE)*trie_size);
          assert(trie);
-         trie[trie_size-1]=(NODE){0,{0,0,0},{-1,-1,-1}};
+         trie[trie_size-1]=(ROSHAMBO_BOT_NODE){0,{0,0,0},{-1,-1,-1}};
       }
-      node=trie[node].next[my_history[my_history[0]]];
+      node=trie[node].next[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]];
       if((node<0)||(node>=trie_size))fprintf(stderr, "OUCH\n");
       /*
        *      Add this node to the context array.
@@ -1673,10 +1673,10 @@ int halbot(void)
     */
    for(i=0; i<context_size; ++i)
       sorted[i]=context[i];
-   qsort(sorted,context_size,sizeof(CONTEXT),halbot_compare);
+   qsort(sorted,context_size,sizeof(ROSHAMBO_BOT_CONTEXT),halbot_compare);
    /*
     *      Starting at the most likely context, gradually fall-back until we
-    *      find a context which has been observed at least BELIEVE times.  Use
+    *      find a context which has been observed at least ROSHAMBO_BOT_BELIEVE times.  Use
     *      this context to predict a probability distribution over the opponents
     *      possible moves.  Select the move which maximises the expected score.
     */
@@ -1684,9 +1684,9 @@ int halbot(void)
    for(i=0; i<context_size; ++i) {
       if(sorted[i].node>=trie_size) continue;
       if(sorted[i].node==-1) break;
-      if(trie[sorted[i].node].total>=BELIEVE) {
+      if(trie[sorted[i].node].total>=ROSHAMBO_BOT_BELIEVE) {
          for(j=0; j<3; ++j)
-            expected[j]=SCOUNT[(j+2)%3]-SCOUNT[(j+1)%3];
+            expected[j]=ROSHAMBO_BOT_SCOUNT[(j+2)%3]-ROSHAMBO_BOT_SCOUNT[(j+1)%3];
          move=0;
          for(j=1; j<3; ++j)
             if(expected[j]>expected[move])
@@ -1706,7 +1706,7 @@ int halbot(void)
    (void)gettimeofday(&end,NULL);
    if(think>=0)
       think+=1000000*(end.tv_sec-start.tv_sec)+(end.tv_usec-start.tv_usec);
-   if((ERROR!=0)&&((think/(my_history[0]+1)>=1000)&&(my_history[0]>100))) {
+   if((ROSHAMBO_BOT_ERROR!=0)&&((think/(ROSHAMBO_BOT_my_history[0]+1)>=1000)&&(ROSHAMBO_BOT_my_history[0]>100))) {
       think=-1;
       fprintf(stdout, "\n\n*** MegaHAL-Infinite is too slow! ***\n\n");
    }
@@ -1738,18 +1738,18 @@ static int halbot_compare(const void *value1, const void *value2)
     *      This is a duplicate of the typedef in halbot(), put here to avoid
     *      having to make it external to the functions.
     */
-   typedef struct S_CONTEXT {
+   typedef struct ROSHAMBO_BOT_S_CONTEXT {
       int worst;
       int best;
       int seen;
       int size;
       int node;
-   } CONTEXT;
+   } ROSHAMBO_BOT_CONTEXT;
    /*
     *      Some local variables.
     */
-   CONTEXT *context1;
-   CONTEXT *context2;
+   ROSHAMBO_BOT_CONTEXT *context1;
+   ROSHAMBO_BOT_CONTEXT *context2;
    float prob1=0.0;
    float prob2=0.0;
    /*
@@ -1760,8 +1760,8 @@ static int halbot_compare(const void *value1, const void *value2)
     *      - If they're both being tried for the first time, choose the shortest.
     *      - If they've both performed equally well, choose the longest.
     */
-   context1=(CONTEXT *)value1;
-   context2=(CONTEXT *)value2;
+   context1=(ROSHAMBO_BOT_CONTEXT *)value1;
+   context2=(ROSHAMBO_BOT_CONTEXT *)value2;
    if(context1->seen>0)
       prob1=(float)(context1->best-context1->worst)/(float)(context1->seen);
    if(context2->seen>0)
@@ -1918,7 +1918,7 @@ int russrocker4()
 
     int i, j, n;
 
-    int n_moves = opp_history[0];
+    int n_moves = ROSHAMBO_BOT_opp_history[0];
     int their_last = -1;
 
     int temp[3];
@@ -1930,26 +1930,26 @@ int russrocker4()
         memset(moves2, 0, sizeof moves2);
         memset(moves3, 0, sizeof moves3);
     } else {
-        their_last = opp_history[n_moves];
+        their_last = ROSHAMBO_BOT_opp_history[n_moves];
     }
 
     switch (n_moves) {
     default:
         ++moves3
-            [my_history[n_moves - 3]][opp_history[n_moves - 3]]
-            [my_history[n_moves - 2]][opp_history[n_moves - 2]]
-            [my_history[n_moves - 1]][opp_history[n_moves - 1]]
+            [ROSHAMBO_BOT_my_history[n_moves - 3]][ROSHAMBO_BOT_opp_history[n_moves - 3]]
+            [ROSHAMBO_BOT_my_history[n_moves - 2]][ROSHAMBO_BOT_opp_history[n_moves - 2]]
+            [ROSHAMBO_BOT_my_history[n_moves - 1]][ROSHAMBO_BOT_opp_history[n_moves - 1]]
             [their_last];
         /*  fall through */
     case 3:
         ++moves2
-            [my_history[n_moves - 2]][opp_history[n_moves - 2]]
-            [my_history[n_moves - 1]][opp_history[n_moves - 1]]
+            [ROSHAMBO_BOT_my_history[n_moves - 2]][ROSHAMBO_BOT_opp_history[n_moves - 2]]
+            [ROSHAMBO_BOT_my_history[n_moves - 1]][ROSHAMBO_BOT_opp_history[n_moves - 1]]
             [their_last];
         /*  fall through */
     case 2:
         ++moves1
-            [my_history[n_moves - 1]][opp_history[n_moves - 1]]
+            [ROSHAMBO_BOT_my_history[n_moves - 1]][ROSHAMBO_BOT_opp_history[n_moves - 1]]
             [their_last];
         /*  fall through */
     case 1:
@@ -1965,9 +1965,9 @@ int russrocker4()
         if (3 <= n_moves) {
             for (i = 0; i < 3; ++i) {
                 temp[i] = moves3
-                    [my_history[n_moves - 2]][opp_history[n_moves - 2]]
-                    [my_history[n_moves - 1]][opp_history[n_moves - 1]]
-                    [my_history[n_moves]][their_last]
+                    [ROSHAMBO_BOT_my_history[n_moves - 2]][ROSHAMBO_BOT_opp_history[n_moves - 2]]
+                    [ROSHAMBO_BOT_my_history[n_moves - 1]][ROSHAMBO_BOT_opp_history[n_moves - 1]]
+                    [ROSHAMBO_BOT_my_history[n_moves]][their_last]
                     [i];
             }
             max_index = russrock_max(temp, 3);
@@ -1987,14 +1987,14 @@ int russrocker4()
                 temp[i] = 0;
                 for (j = 0; j < 3; ++j) {
                     temp[i] += moves3
-                        [j][opp_history[n_moves - 2]]
-                        [my_history[n_moves - 1]][opp_history[n_moves - 1]]
-                        [my_history[n_moves]][their_last]
+                        [j][ROSHAMBO_BOT_opp_history[n_moves - 2]]
+                        [ROSHAMBO_BOT_my_history[n_moves - 1]][ROSHAMBO_BOT_opp_history[n_moves - 1]]
+                        [ROSHAMBO_BOT_my_history[n_moves]][their_last]
                         [i]
                         + moves3
-                        [my_history[n_moves - 2]][j]
-                        [my_history[n_moves - 1]][opp_history[n_moves - 1]]
-                        [my_history[n_moves]][their_last]
+                        [ROSHAMBO_BOT_my_history[n_moves - 2]][j]
+                        [ROSHAMBO_BOT_my_history[n_moves - 1]][ROSHAMBO_BOT_opp_history[n_moves - 1]]
+                        [ROSHAMBO_BOT_my_history[n_moves]][their_last]
                         [i];
                 }
             }
@@ -2014,8 +2014,8 @@ int russrocker4()
         if (2 <= n_moves) {
             for (i = 0; i < 3; ++i) {
                 temp[i] = moves2
-                    [my_history[n_moves - 1]][opp_history[n_moves - 1]]
-                    [my_history[n_moves]][their_last]
+                    [ROSHAMBO_BOT_my_history[n_moves - 1]][ROSHAMBO_BOT_opp_history[n_moves - 1]]
+                    [ROSHAMBO_BOT_my_history[n_moves]][their_last]
                     [i];
             }
             max_index = russrock_max(temp, 3);
@@ -2035,12 +2035,12 @@ int russrocker4()
                 temp[i] = 0;
                 for (j = 0; j < 3; ++j) {
                     temp[i] += moves2
-                        [j][opp_history[n_moves - 1]]
-                        [my_history[n_moves]][their_last]
+                        [j][ROSHAMBO_BOT_opp_history[n_moves - 1]]
+                        [ROSHAMBO_BOT_my_history[n_moves]][their_last]
                         [i]
                         + moves2
-                        [my_history[n_moves - 1]][j]
-                        [my_history[n_moves]][their_last]
+                        [ROSHAMBO_BOT_my_history[n_moves - 1]][j]
+                        [ROSHAMBO_BOT_my_history[n_moves]][their_last]
                         [i];
                 }
             }
@@ -2060,7 +2060,7 @@ int russrocker4()
         if (1 <= n_moves) {
             for (i = 0; i < 3; ++i) {
                 temp[i] = moves1
-                    [my_history[n_moves]][their_last]
+                    [ROSHAMBO_BOT_my_history[n_moves]][their_last]
                     [i];
             }
             max_index = russrock_max(temp, 3);
@@ -2083,7 +2083,7 @@ int russrocker4()
                         [j][their_last]
                         [i]
                         + moves1
-                        [my_history[n_moves]][j]
+                        [ROSHAMBO_BOT_my_history[n_moves]][j]
                         [i];
                 }
             }
@@ -2142,75 +2142,75 @@ int russrocker4()
 /* September 27, 1999    (debugged version, after the official event)    */
 
 /* Shortcuts, because I am lazy */
-#define ME           my_history
-#define YOU          opp_history
-#define TRIAL        ME [ 0 ]
-#define MY_PLAY      ME [ TRIAL ]
-#define YOU_PLAY     YOU[ TRIAL ]
-#define JRANDOM_MOVE return( random() % 3 );
-#define JSINFINITY     (1<<30)
+#define ROSHAMBO_BOT_ME           ROSHAMBO_BOT_my_history
+#define ROSHAMBO_BOT_YOU          ROSHAMBO_BOT_opp_history
+#define ROSHAMBO_BOT_TRIAL        ROSHAMBO_BOT_ME [ 0 ]
+#define ROSHAMBO_BOT_MY_PLAY      ROSHAMBO_BOT_ME [ ROSHAMBO_BOT_TRIAL ]
+#define ROSHAMBO_BOT_YOU_PLAY     ROSHAMBO_BOT_YOU[ ROSHAMBO_BOT_TRIAL ]
+#define ROSHAMBO_BOT_JRANDOM_MOVE return( random() % 3 );
+#define ROSHAMBO_BOT_JSINFINITY     (1<<30)
 
 /* Application dependent parameters */
-#define WSIZE        25      /* Size of a losing margin? */
-#define CSIZE        10      /* Storage inefficient */
-#define EV_SCALE     5       /* Used to determine a "small" value */
-#define WEIGHTED             /* Bias towards more rather than less context */
+#define ROSHAMBO_BOT_WSIZE        25      /* Size of a losing margin? */
+#define ROSHAMBO_BOT_CSIZE        10      /* Storage inefficient */
+#define ROSHAMBO_BOT_EV_SCALE     5       /* Used to determine a "small" value */
+#define ROSHAMBO_BOT_WEIGHTED             /* Bias towards more rather than less context */
 
 //extern void bzero();
 
-static int mult[ CSIZE ];
+static int mult[ ROSHAMBO_BOT_CSIZE ];
 
 /* Support routines */
 
-#define EV_TTL  ttl = ev[ rock ] + ev[ paper ] + ev[ scissors ];
+#define ROSHAMBO_BOT_EV_TTL  ttl = ev[ ROSHAMBO_BOT_rock ] + ev[ ROSHAMBO_BOT_paper ] + ev[ ROSHAMBO_BOT_scissors ];
 
 int BiopicMove( int * wt )
 {
     int ev[ 3 ], ttl, i;
 
-    ev[ paper    ] = wt[ rock     ] - wt[ scissors ];
-    ev[ rock     ] = wt[ scissors ] - wt[ paper    ];
-    ev[ scissors ] = wt[ paper    ] - wt[ rock     ];
+    ev[ ROSHAMBO_BOT_paper    ] = wt[ ROSHAMBO_BOT_rock     ] - wt[ ROSHAMBO_BOT_scissors ];
+    ev[ ROSHAMBO_BOT_rock     ] = wt[ ROSHAMBO_BOT_scissors ] - wt[ ROSHAMBO_BOT_paper    ];
+    ev[ ROSHAMBO_BOT_scissors ] = wt[ ROSHAMBO_BOT_paper    ] - wt[ ROSHAMBO_BOT_rock     ];
 
     /* Decide */
 
     /* Make small values 0 */
-    EV_TTL
+    ROSHAMBO_BOT_EV_TTL
     for( i = 0; i < 3; i++ )
-        if( ev[ i ] * EV_SCALE < ttl )
+        if( ev[ i ] * ROSHAMBO_BOT_EV_SCALE < ttl )
             ev[ i ] = 0;
 
     /* Make large values big */
-    EV_TTL
+    ROSHAMBO_BOT_EV_TTL
     for( i = 0; i < 3; i++ )
         if( ev[ i ] * 5 / 3 >= ttl )
             ev[ i ] = 99999;
 
     /* Decide */
-    EV_TTL
+    ROSHAMBO_BOT_EV_TTL
     if( ttl <= 0 )
         return( biased_roshambo( (double) 1.0/3, (double) 1.0/3 ) );
-    else    return( biased_roshambo( (double) ev[ rock  ] / ttl,
-                     (double) ev[ paper ] / ttl ) );
+    else    return( biased_roshambo( (double) ev[ ROSHAMBO_BOT_rock  ] / ttl,
+                     (double) ev[ ROSHAMBO_BOT_paper ] / ttl ) );
 }
 
 void BiopicWeight( int wt[], short int * context[], int * history )
 {
-    int i, j, ptr[ CSIZE ];
+    int i, j, ptr[ ROSHAMBO_BOT_CSIZE ];
 
     /* Get indices into context */
-    for( j = i = 0; i < CSIZE && TRIAL - i > 0; i++ )
-        ptr[ i ] = ( j += history[ TRIAL - i ] * mult[ i ] ) * 3;
+    for( j = i = 0; i < ROSHAMBO_BOT_CSIZE && ROSHAMBO_BOT_TRIAL - i > 0; i++ )
+        ptr[ i ] = ( j += history[ ROSHAMBO_BOT_TRIAL - i ] * mult[ i ] ) * 3;
 
     /* Process context */
-    wt[ rock ] = wt[ paper ] = wt[ scissors ] = 0;
-    for( i = 0; i < CSIZE; i++ )
+    wt[ ROSHAMBO_BOT_rock ] = wt[ ROSHAMBO_BOT_paper ] = wt[ ROSHAMBO_BOT_scissors ] = 0;
+    for( i = 0; i < ROSHAMBO_BOT_CSIZE; i++ )
     {
-        if( TRIAL - i <= 0 )
+        if( ROSHAMBO_BOT_TRIAL - i <= 0 )
             continue;
         for( j = 0; j < 3; j++ )
             wt[ j ] += context[ i ][ ptr[ i ] + j ]
-#ifdef WEIGHTED
+#ifdef ROSHAMBO_BOT_WEIGHTED
                 * mult[ i ]
 #endif
                 ;
@@ -2222,10 +2222,10 @@ void BiopicWeight( int wt[], short int * context[], int * history )
 
 int biopic ()
 {
-    static int score = -JSINFINITY;
+    static int score = -ROSHAMBO_BOT_JSINFINITY;
     static int gorandom, move[ 4 ], sc[ 4 ], freq[ 2 ][ 3 ];
     /* Short int limits matches to 32K */
-    static short int * myh[ CSIZE ], * oph[ CSIZE ];
+    static short int * myh[ ROSHAMBO_BOT_CSIZE ], * oph[ ROSHAMBO_BOT_CSIZE ];
 
     int i, j, ix, wt[3];
 
@@ -2236,12 +2236,12 @@ int biopic ()
      */
 
     /* (1) First time the bot is run */
-    if( score == -JSINFINITY )
+    if( score == -ROSHAMBO_BOT_JSINFINITY )
     {
-        for( i = 1, ix = 3; i < CSIZE; i++, ix *= 3 )
+        for( i = 1, ix = 3; i < ROSHAMBO_BOT_CSIZE; i++, ix *= 3 )
             mult[ i ] = ix;
         mult[ 0 ] = 1;
-        for( i = 0, ix = 3; i < CSIZE; i++, ix *= 3 )
+        for( i = 0, ix = 3; i < ROSHAMBO_BOT_CSIZE; i++, ix *= 3 )
         {
             myh[ i ] = malloc( ix * sizeof(short int) * 3 );
             oph[ i ] = malloc( ix * sizeof(short int) * 3 );
@@ -2249,13 +2249,13 @@ int biopic ()
     }
 
     /* (2) First hand of a match */
-    if( TRIAL == 0 )
+    if( ROSHAMBO_BOT_TRIAL == 0 )
     {
         score = gorandom = 0;
         for( i = 0; i < 4; sc[ i++ ] = 0 );
         for( i = 0; i < 3; i++ )
             freq[ 0 ][ i ] = freq[ 1 ][ i ] = 0;
-        for( i = 0, ix = 3; i < CSIZE; i++, ix *= 3 )
+        for( i = 0, ix = 3; i < ROSHAMBO_BOT_CSIZE; i++, ix *= 3 )
         {
             bzero( myh[ i ], ix * sizeof(short int) * 3 );
             bzero( oph[ i ], ix * sizeof(short int) * 3 );
@@ -2268,8 +2268,8 @@ int biopic ()
 
 
     /* First hand - make a random move */
-    if( TRIAL <= 0 )
-        JRANDOM_MOVE
+    if( ROSHAMBO_BOT_TRIAL <= 0 )
+        ROSHAMBO_BOT_JRANDOM_MOVE
 
 
 
@@ -2280,34 +2280,34 @@ int biopic ()
      */
 
     /* (1) How is the match going? */
-         if( ( MY_PLAY - YOU_PLAY ==  1 ) ||
-         ( MY_PLAY - YOU_PLAY == -2 ) )
+         if( ( ROSHAMBO_BOT_MY_PLAY - ROSHAMBO_BOT_YOU_PLAY ==  1 ) ||
+         ( ROSHAMBO_BOT_MY_PLAY - ROSHAMBO_BOT_YOU_PLAY == -2 ) )
         score += 1;
-    else if( ( YOU_PLAY - MY_PLAY ==  1 ) ||
-         ( YOU_PLAY - MY_PLAY == -2 ) )
+    else if( ( ROSHAMBO_BOT_YOU_PLAY - ROSHAMBO_BOT_MY_PLAY ==  1 ) ||
+         ( ROSHAMBO_BOT_YOU_PLAY - ROSHAMBO_BOT_MY_PLAY == -2 ) )
         score += -1;
 
     /* (2) Save context */
-    freq[ 0 ][ ME [ TRIAL ] ]++;
-    freq[ 1 ][ YOU[ TRIAL ] ]++;
+    freq[ 0 ][ ROSHAMBO_BOT_ME [ ROSHAMBO_BOT_TRIAL ] ]++;
+    freq[ 1 ][ ROSHAMBO_BOT_YOU[ ROSHAMBO_BOT_TRIAL ] ]++;
 
     /* (3) How good are our predictions? */
-    if( TRIAL > 1 )
+    if( ROSHAMBO_BOT_TRIAL > 1 )
     {
         for( i = 0; i < 4; i++ )
-            if( ( ( move[ i ] + 2 ) % 3 ) == YOU_PLAY )
+            if( ( ( move[ i ] + 2 ) % 3 ) == ROSHAMBO_BOT_YOU_PLAY )
                 sc[ i ]++;
     }
 
     /* (4) Update context strings */
-    for( j = YOU[TRIAL], i = 1; i <= CSIZE && TRIAL-i > 0; i++ )
-        oph[ i-1 ][ j += YOU[ TRIAL-i ] * 3 * mult[ i-1 ] ]++;
-    for( j = YOU[TRIAL], i = 1; i <= CSIZE && TRIAL-i > 0; i++ )
-        myh[ i-1 ][ j += ME [ TRIAL-i ] * 3 * mult[ i-1 ] ]++;
+    for( j = ROSHAMBO_BOT_YOU[ROSHAMBO_BOT_TRIAL], i = 1; i <= ROSHAMBO_BOT_CSIZE && ROSHAMBO_BOT_TRIAL-i > 0; i++ )
+        oph[ i-1 ][ j += ROSHAMBO_BOT_YOU[ ROSHAMBO_BOT_TRIAL-i ] * 3 * mult[ i-1 ] ]++;
+    for( j = ROSHAMBO_BOT_YOU[ROSHAMBO_BOT_TRIAL], i = 1; i <= ROSHAMBO_BOT_CSIZE && ROSHAMBO_BOT_TRIAL-i > 0; i++ )
+        myh[ i-1 ][ j += ROSHAMBO_BOT_ME [ ROSHAMBO_BOT_TRIAL-i ] * 3 * mult[ i-1 ] ]++;
 
     /* Periodically scale back results so that the program can */
     /* switch strategies.                      */
-    if( ( TRIAL % 32 ) == 0 )
+    if( ( ROSHAMBO_BOT_TRIAL % 32 ) == 0 )
     {
         for( i = 0; i < 3; i++ )
         {
@@ -2330,14 +2330,14 @@ int biopic ()
     /* Taken care of above */
 
     /* (2) If down too far, go random */
-    if( score < -WSIZE )
-        JRANDOM_MOVE
+    if( score < -ROSHAMBO_BOT_WSIZE )
+        ROSHAMBO_BOT_JRANDOM_MOVE
 
     /* (3) Make a random move to confuse the opponent */
     if( gorandom )
     {
         if( (--gorandom) >= 8 )
-            JRANDOM_MOVE
+            ROSHAMBO_BOT_JRANDOM_MOVE
     }
 
     /* (4) If things not going well with our predicitons, make */
@@ -2345,17 +2345,17 @@ int biopic ()
     if( score <= -10 && gorandom == 0 )
     {
         gorandom = 16;
-        JRANDOM_MOVE
+        ROSHAMBO_BOT_JRANDOM_MOVE
     }
 
     /* (5) Use tables to predict next move using opponent info */
     /* Prediction 1                                            */
-    BiopicWeight( wt, oph, YOU );
+    BiopicWeight( wt, oph, ROSHAMBO_BOT_YOU );
     move[ 0 ] = BiopicMove( wt );
 
     /* (6) Use tables to predict next move using our info   */
     /* Prediction 2                                         */
-    BiopicWeight( wt, myh, ME );
+    BiopicWeight( wt, myh, ROSHAMBO_BOT_ME );
     move[ 1 ] = BiopicMove( wt );
 
     /* (7) Check the frequency of the opponent's actions    */
@@ -2418,23 +2418,23 @@ int biopic ()
 int mod1bot()  /* Don Beal (UK) simple model builder */
 {   static double c[96], d[96], fade=0.98;
     static double c0,c1,c2,u0,u1,u2,b;  int bm;
-#define SETC(x) c0=c[x];c1=c[x+1];c2=c[x+2];
-#define SETD(x) c0=d[x];c1=d[x+1];c2=d[x+2];
-#define SETU u0=c2-c1;u1=c0-c2;u2=c1-c0;
-#define SETBM b=u0;bm=0;if(u1>b){b=u1;bm=1;};if(u2>b){b=u2;bm=2;}
-#define BEATBM bm=(bm+1)%3;
-#define SCORE(m,o) (m==o?0:(((o+1)%3)==m?1:-1))
+#define ROSHAMBO_BOT_SETC(x) c0=c[x];c1=c[x+1];c2=c[x+2];
+#define ROSHAMBO_BOT_SETD(x) c0=d[x];c1=d[x+1];c2=d[x+2];
+#define ROSHAMBO_BOT_SETU u0=c2-c1;u1=c0-c2;u2=c1-c0;
+#define ROSHAMBO_BOT_SETBM b=u0;bm=0;if(u1>b){b=u1;bm=1;};if(u2>b){b=u2;bm=2;}
+#define ROSHAMBO_BOT_BEATBM bm=(bm+1)%3;
+#define ROSHAMBO_BOT_SCORE(m,o) (m==o?0:(((o+1)%3)==m?1:-1))
     int i,j,k,l,m,m1,o,o1, s, id;
     double q, qi, qj, qk, ql, qd;
-    int history_length= my_history[0];
+    int history_length= ROSHAMBO_BOT_my_history[0];
     m = 0; m1 = 0; o = 0; o1 = 0; /* -db */
     if(history_length>0)
-    { o = opp_history[history_length];
-      m = my_history[history_length];
+    { o = ROSHAMBO_BOT_opp_history[history_length];
+      m = ROSHAMBO_BOT_my_history[history_length];
     }
     if(history_length>1)
-    { o1 = opp_history[history_length-1];
-      m1 = my_history[history_length-1];
+    { o1 = ROSHAMBO_BOT_opp_history[history_length-1];
+      m1 = ROSHAMBO_BOT_my_history[history_length-1];
     }
     if(history_length==0)
     { for(i=0;i<96;i++) c[i]=d[i]=0;   }
@@ -2443,13 +2443,13 @@ int mod1bot()  /* Don Beal (UK) simple model builder */
       if(history_length>2)
       { if(c[i+3]>0)
                 /* c[i+4]+=score(bplay(&c[i]),o); */
-          { SETC(i); SETU; SETBM; c[i+4]+=SCORE(bm,o); c[i+5]+=1; }
+          { ROSHAMBO_BOT_SETC(i); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; c[i+4]+=ROSHAMBO_BOT_SCORE(bm,o); c[i+5]+=1; }
         if(c[j+3]>0)
-          { SETC(j); SETU; SETBM; c[j+4]+=SCORE(bm,o); c[j+5]+=1; }
+          { ROSHAMBO_BOT_SETC(j); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; c[j+4]+=ROSHAMBO_BOT_SCORE(bm,o); c[j+5]+=1; }
         if(c[k+3]>0)
-          { SETC(k); SETU; SETBM; c[k+4]+=SCORE(bm,o); c[k+5]+=1; }
+          { ROSHAMBO_BOT_SETC(k); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; c[k+4]+=ROSHAMBO_BOT_SCORE(bm,o); c[k+5]+=1; }
         if(c[l+3]>0)
-          { SETC(l); SETU; SETBM; c[l+4]+=SCORE(bm,o); c[l+5]+=1; }
+          { ROSHAMBO_BOT_SETC(l); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; c[l+4]+=ROSHAMBO_BOT_SCORE(bm,o); c[l+5]+=1; }
       }
       c[i+o]+=1;  c[j+o]+=1;  c[k+o]+=1; c[l+o]+=1;
       c[i+3]+=1;  c[j+3]+=1;  c[k+3]+=1; c[l+3]+=1;
@@ -2457,13 +2457,13 @@ int mod1bot()  /* Don Beal (UK) simple model builder */
       if(history_length>2)
       { if(d[i+3]>0)
                 /* md=bplay(&d[i]); d[i+4]+=score((md+1)%3,o); */
-          { SETD(i); SETU; SETBM; BEATBM; d[i+4]+=SCORE(bm,o); d[i+5]+=1; }
+          { ROSHAMBO_BOT_SETD(i); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; ROSHAMBO_BOT_BEATBM; d[i+4]+=ROSHAMBO_BOT_SCORE(bm,o); d[i+5]+=1; }
         if(d[j+3]>0)
-          { SETD(j); SETU; SETBM; BEATBM; d[j+4]+=SCORE(bm,o); d[j+5]+=1; }
+          { ROSHAMBO_BOT_SETD(j); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; ROSHAMBO_BOT_BEATBM; d[j+4]+=ROSHAMBO_BOT_SCORE(bm,o); d[j+5]+=1; }
         if(d[k+3]>0)
-          { SETD(k); SETU; SETBM; BEATBM; d[k+4]+=SCORE(bm,o); d[k+5]+=1; }
+          { ROSHAMBO_BOT_SETD(k); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; ROSHAMBO_BOT_BEATBM; d[k+4]+=ROSHAMBO_BOT_SCORE(bm,o); d[k+5]+=1; }
         if(d[l+3]>0)
-          { SETD(l); SETU; SETBM; BEATBM; d[l+4]+=SCORE(bm,o); d[l+5]+=1; }
+          { ROSHAMBO_BOT_SETD(l); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; ROSHAMBO_BOT_BEATBM; d[l+4]+=ROSHAMBO_BOT_SCORE(bm,o); d[l+5]+=1; }
       }
       d[i+m]+=1;  d[j+m]+=1;  d[k+m]+=1; d[l+m]+=1;
       d[i+3]+=1;  d[j+3]+=1;  d[k+3]+=1; d[l+3]+=1;
@@ -2473,7 +2473,7 @@ int mod1bot()  /* Don Beal (UK) simple model builder */
     if(history_length==0)   return( random() % 3 );
     else if(history_length==1)    return( (o+1) % 3 );
     else
-    { id=m*24+o*6;  SETD(id); SETU; SETBM; BEATBM;
+    { id=m*24+o*6;  ROSHAMBO_BOT_SETD(id); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM; ROSHAMBO_BOT_BEATBM;
       qd= d[id+5]>0? d[id+4]/d[id+5]:0;
       i=o*24+m*6; j=o*24+3*6; k=3*24+m*6; l=3*24+3*6;
       qi= c[i+5]>0? c[i+4]/c[i+5]:0;
@@ -2485,16 +2485,16 @@ int mod1bot()  /* Don Beal (UK) simple model builder */
       if(qk>q) { q=qk; s=k; }
       if(ql>q) { q=ql; s=l; }
       if(qd>q && qd>0) return(bm);
-      SETC(s); SETU; SETBM;
+      ROSHAMBO_BOT_SETC(s); ROSHAMBO_BOT_SETU; ROSHAMBO_BOT_SETBM;
       if(q>0) return(bm);
       return( random()%3 );
     }
-#undef SETC
-#undef SETD
-#undef SETU
-#undef SETBM
-#undef BEATBM
-#undef SCORE
+#undef ROSHAMBO_BOT_SETC
+#undef ROSHAMBO_BOT_SETD
+#undef ROSHAMBO_BOT_SETU
+#undef ROSHAMBO_BOT_SETBM
+#undef ROSHAMBO_BOT_BEATBM
+#undef ROSHAMBO_BOT_SCORE
 }
 /**********************************************************************/
 
@@ -2503,7 +2503,7 @@ int mod1bot()  /* Don Beal (UK) simple model builder */
 
 int predbot()
 {
-    static double c[64];  int history_length= my_history[0];
+    static double c[64];  int history_length= ROSHAMBO_BOT_my_history[0];
     int i,j,k,l,m,m1,o,o1, s,mr,mp,ms,mb;
     double q, qi, qj, qk, ql;
     if(history_length==0)
@@ -2511,11 +2511,11 @@ int predbot()
       return( random() % 3 );
     }
     else {
-    o = opp_history[history_length];
-    m = my_history[history_length];
+    o = ROSHAMBO_BOT_opp_history[history_length];
+    m = ROSHAMBO_BOT_my_history[history_length];
     if(history_length>1)
-    { o1 = opp_history[history_length-1];
-      m1 = my_history[history_length-1];
+    { o1 = ROSHAMBO_BOT_opp_history[history_length-1];
+      m1 = ROSHAMBO_BOT_my_history[history_length-1];
       i=o1*16+m1*4+o; j=o1*16+3*4+o; k=3*16+m1*4+o; l=3*16+3*4+o;
       c[i]+=1;  c[j]+=1;  c[k]+=1; c[l]+=1;
       c[i+3-o]+=1;  c[j+3-o]+=1;  c[k+3-o]+=1; c[l+3-o]+=1;
@@ -2533,9 +2533,9 @@ int predbot()
     mr= c[s+2]-c[s+1];
     mp= c[s]-c[s+2];
     ms= c[s+1]-c[s];
-    mb=mr;  m=rock;
-    if(mp>mb) { mb=mp;  m=paper; }
-    if(ms>mb) m=scissors;
+    mb=mr;  m=ROSHAMBO_BOT_rock;
+    if(mp>mb) { mb=mp;  m=ROSHAMBO_BOT_paper; }
+    if(ms>mb) m=ROSHAMBO_BOT_scissors;
     return(m);
     }
 }
@@ -2546,77 +2546,77 @@ int predbot()
 
 int robertot ()
 {
-#define NHIST           10
-#define NPREDICTS       2
-#define STEPS           200     /* grains for the freq count % */
-#define MAXVOTE         256     /* maximal vote for 0/100% */
-#define ZERO            11.1    /* zero point for the distribution */
+#define ROSHAMBO_BOT_NHIST           10
+#define ROSHAMBO_BOT_NPREDICTS       2
+#define ROSHAMBO_BOT_STEPS           200     /* grains for the freq count % */
+#define ROSHAMBO_BOT_MAXVOTE         256     /* maximal vote for 0/100% */
+#define ROSHAMBO_BOT_ZERO            11.1    /* zero point for the distribution */
 
-#define FUNC(x) ((x)*(x)*(x)*(x)*(x))
-#define MAXR(x,y) ((x)>(y)?(x):(y))
-#define MINR(x,y) ((x)<(y)?(x):(y))
+#define ROSHAMBO_BOT_FUNC(x) ((x)*(x)*(x)*(x)*(x))
+#define ROSHAMBO_BOT_MAXR(x,y) ((x)>(y)?(x):(y))
+#define ROSHAMBO_BOT_MINR(x,y) ((x)<(y)?(x):(y))
 
-    /* gather stats for counts of related events, NHIST back */
-    static int hitsd[NHIST][3][3][3];   /* NHIST counts, for each combination */
-    static int countd[NHIST][3][3];     /* history was seen how many times */
+    /* gather stats for counts of related events, ROSHAMBO_BOT_NHIST back */
+    static int hitsd[ROSHAMBO_BOT_NHIST][3][3][3];   /* ROSHAMBO_BOT_NHIST counts, for each combination */
+    static int countd[ROSHAMBO_BOT_NHIST][3][3];     /* history was seen how many times */
     int p,h,pos,rsb,h_rsb,o_rsb;
     int vote[3];
-    static int incvote[STEPS+1];
+    static int incvote[ROSHAMBO_BOT_STEPS+1];
     float index;
 
-    if (opp_history[0] == 0) {
-        memset(hitsd,0,sizeof(int)*NHIST*3*3*3);
-        memset(countd,0,sizeof(int)*NHIST*3*3);
-        for (index=((float)MAXVOTE)/FUNC(ZERO), p=0, h=ZERO; h>0; h--)
-                incvote[p++] = -((int)((((float)FUNC(h))*index)+0.5));
-        for (index=((float)MAXVOTE)/FUNC(STEPS-ZERO), h=ZERO; h<=STEPS; h++)
-                incvote[p++] = ((int)((((float)FUNC(h-ZERO))*index)+0.5));
+    if (ROSHAMBO_BOT_opp_history[0] == 0) {
+        memset(hitsd,0,sizeof(int)*ROSHAMBO_BOT_NHIST*3*3*3);
+        memset(countd,0,sizeof(int)*ROSHAMBO_BOT_NHIST*3*3);
+        for (index=((float)ROSHAMBO_BOT_MAXVOTE)/ROSHAMBO_BOT_FUNC(ROSHAMBO_BOT_ZERO), p=0, h=ROSHAMBO_BOT_ZERO; h>0; h--)
+                incvote[p++] = -((int)((((float)ROSHAMBO_BOT_FUNC(h))*index)+0.5));
+        for (index=((float)ROSHAMBO_BOT_MAXVOTE)/ROSHAMBO_BOT_FUNC(ROSHAMBO_BOT_STEPS-ROSHAMBO_BOT_ZERO), h=ROSHAMBO_BOT_ZERO; h<=ROSHAMBO_BOT_STEPS; h++)
+                incvote[p++] = ((int)((((float)ROSHAMBO_BOT_FUNC(h-ROSHAMBO_BOT_ZERO))*index)+0.5));
     }
-    if (opp_history[0] >= NPREDICTS) {
+    if (ROSHAMBO_BOT_opp_history[0] >= ROSHAMBO_BOT_NPREDICTS) {
         /* Only with enough data try to predict! */
-        pos = opp_history[0];
-        rsb = opp_history[pos];
-        for (h=0; h<NHIST && (pos-(h+1))>0; h++) {
-            countd[h][opp_history[pos-(h+1)]][my_history[pos-(h+1)]]++;
-            hitsd [h][rsb][opp_history[pos-(h+1)]][my_history[pos-(h+1)]]++;
+        pos = ROSHAMBO_BOT_opp_history[0];
+        rsb = ROSHAMBO_BOT_opp_history[pos];
+        for (h=0; h<ROSHAMBO_BOT_NHIST && (pos-(h+1))>0; h++) {
+            countd[h][ROSHAMBO_BOT_opp_history[pos-(h+1)]][ROSHAMBO_BOT_my_history[pos-(h+1)]]++;
+            hitsd [h][rsb][ROSHAMBO_BOT_opp_history[pos-(h+1)]][ROSHAMBO_BOT_my_history[pos-(h+1)]]++;
         }
         for (rsb=0; rsb<3; rsb++) vote[rsb]=0;
         /* Now, each history entry will vote for which move to play */
         for (rsb=0; rsb<3; rsb++) {
-            for (h=0; h<NHIST && (pos-h)>0; h++) {
-                o_rsb = opp_history[pos-h];
-                h_rsb =  my_history[pos-h];
+            for (h=0; h<ROSHAMBO_BOT_NHIST && (pos-h)>0; h++) {
+                o_rsb = ROSHAMBO_BOT_opp_history[pos-h];
+                h_rsb =  ROSHAMBO_BOT_my_history[pos-h];
                 if (countd[h][o_rsb][h_rsb]) {
-                  index=((float)STEPS)*
+                  index=((float)ROSHAMBO_BOT_STEPS)*
                           hitsd[h][rsb][o_rsb][h_rsb]/countd[h][o_rsb][h_rsb];
                   vote[rsb] += incvote[(int)index];
                 }
             }
         }
-        h = MINR(vote[rock],vote[paper]);
-        h = MINR(h,vote[scissors]);
-        vote[rock] -= h; vote[paper] -= h; vote[scissors] -= h;
-        h = MAXR(vote[rock],vote[paper]);
-        h = MAXR(h,vote[scissors]);
+        h = ROSHAMBO_BOT_MINR(vote[ROSHAMBO_BOT_rock],vote[ROSHAMBO_BOT_paper]);
+        h = ROSHAMBO_BOT_MINR(h,vote[ROSHAMBO_BOT_scissors]);
+        vote[ROSHAMBO_BOT_rock] -= h; vote[ROSHAMBO_BOT_paper] -= h; vote[ROSHAMBO_BOT_scissors] -= h;
+        h = ROSHAMBO_BOT_MAXR(vote[ROSHAMBO_BOT_rock],vote[ROSHAMBO_BOT_paper]);
+        h = ROSHAMBO_BOT_MAXR(h,vote[ROSHAMBO_BOT_scissors]);
         h = (h*3)/4;
         if (h==0) h++;
-        vote[rock] /= h; vote[paper] /= h; vote[scissors] /= h;
-        if (verbose1)
-                printf("%i %i %i\n", vote[rock], vote[paper], vote[scissors]);
-        if (vote[rock] > vote[scissors] && vote[rock] > vote[paper])
-            return(paper);
-        else if (vote[scissors] > vote[paper] && vote[scissors] > vote[rock])
-            return(rock);
-        else if (vote[paper] > vote[rock] && vote[paper] > vote[scissors])
-            return(scissors);
-        else if (vote[rock] == vote[paper] && vote[paper] == vote[scissors])
+        vote[ROSHAMBO_BOT_rock] /= h; vote[ROSHAMBO_BOT_paper] /= h; vote[ROSHAMBO_BOT_scissors] /= h;
+        if (ROSHAMBO_BOT_verbose1)
+                printf("%i %i %i\n", vote[ROSHAMBO_BOT_rock], vote[ROSHAMBO_BOT_paper], vote[ROSHAMBO_BOT_scissors]);
+        if (vote[ROSHAMBO_BOT_rock] > vote[ROSHAMBO_BOT_scissors] && vote[ROSHAMBO_BOT_rock] > vote[ROSHAMBO_BOT_paper])
+            return(ROSHAMBO_BOT_paper);
+        else if (vote[ROSHAMBO_BOT_scissors] > vote[ROSHAMBO_BOT_paper] && vote[ROSHAMBO_BOT_scissors] > vote[ROSHAMBO_BOT_rock])
+            return(ROSHAMBO_BOT_rock);
+        else if (vote[ROSHAMBO_BOT_paper] > vote[ROSHAMBO_BOT_rock] && vote[ROSHAMBO_BOT_paper] > vote[ROSHAMBO_BOT_scissors])
+            return(ROSHAMBO_BOT_scissors);
+        else if (vote[ROSHAMBO_BOT_rock] == vote[ROSHAMBO_BOT_paper] && vote[ROSHAMBO_BOT_paper] == vote[ROSHAMBO_BOT_scissors])
             return( random() % 3);
-        else if (vote[rock] == vote[paper])
-            return(paper);
-        else if (vote[paper] == vote[scissors])
-            return(scissors);
-        else if (vote[scissors] == vote[rock])
-            return(rock);
+        else if (vote[ROSHAMBO_BOT_rock] == vote[ROSHAMBO_BOT_paper])
+            return(ROSHAMBO_BOT_paper);
+        else if (vote[ROSHAMBO_BOT_paper] == vote[ROSHAMBO_BOT_scissors])
+            return(ROSHAMBO_BOT_scissors);
+        else if (vote[ROSHAMBO_BOT_scissors] == vote[ROSHAMBO_BOT_rock])
+            return(ROSHAMBO_BOT_rock);
         else return( random() % 3); /* should never happen */
     } else {
         return( random() % 3);
@@ -2672,7 +2672,7 @@ int boom () {
   
   pred_r = 0; pred_p = 0; pred_s = 0;
   filter_opp = 0; filter_me = 0; filter_lag = -1;
-  turn = opp_history[0];
+  turn = ROSHAMBO_BOT_opp_history[0];
 
   bail_l_min = sqrt((1-lambda)/3);
   bail_l_max = sqrt(2*(1-lambda));
@@ -2689,13 +2689,13 @@ int boom () {
   }
   else { /* update statistics */
 
-    opp_last = opp_history[turn];
-    my_last = my_history[turn];
+    opp_last = ROSHAMBO_BOT_opp_history[turn];
+    my_last = ROSHAMBO_BOT_my_history[turn];
 
     for (i=0; i<boom_history; i++) {
       if (turn-i-1 > 0) {
-        opp_earlier = opp_history[turn-i-1];
-        my_earlier = my_history[turn-i-1];
+        opp_earlier = ROSHAMBO_BOT_opp_history[turn-i-1];
+        my_earlier = ROSHAMBO_BOT_my_history[turn-i-1];
 
         boom_stats[i][opp_earlier][my_earlier][opp_last]++;
         boom_stats[i][3][my_earlier][opp_last]++;
@@ -2733,7 +2733,7 @@ int boom () {
     int r,p,s,t;
     float w;
 
-    opp_earlier = opp_history[turn-i]; my_earlier = my_history[turn-i];
+    opp_earlier = ROSHAMBO_BOT_opp_history[turn-i]; my_earlier = ROSHAMBO_BOT_my_history[turn-i];
 
     r = boom_stats[i][opp_earlier][my_earlier][0];
     p = boom_stats[i][opp_earlier][my_earlier][1];
@@ -2789,15 +2789,15 @@ int boom () {
 
     /* get 2nd order stats */
     for (i=filter_lag+2; i<=turn; i++) {
-      opp_earlier = opp_history[i-filter_lag-1];
-      my_earlier = my_history[i-filter_lag-1];
+      opp_earlier = ROSHAMBO_BOT_opp_history[i-filter_lag-1];
+      my_earlier = ROSHAMBO_BOT_my_history[i-filter_lag-1];
       if (((filter_opp == 3) || (filter_opp == opp_earlier)) &&
           ((filter_me == 3) || (filter_me == my_earlier))) {
-        opp_last = opp_history[i];
+        opp_last = ROSHAMBO_BOT_opp_history[i];
         for (j=0; j<boom_history; j++) {
           if (i-j-1 > 0) {
-            opp_earlier = opp_history[i-j-1];
-            my_earlier = my_history[i-j-1];
+            opp_earlier = ROSHAMBO_BOT_opp_history[i-j-1];
+            my_earlier = ROSHAMBO_BOT_my_history[i-j-1];
             boom_secondary_stats[j][opp_earlier][my_earlier][opp_last]++;
             boom_secondary_stats[j][3][my_earlier][opp_last]++;
             boom_secondary_stats[j][opp_earlier][3][opp_last]++;
@@ -2809,7 +2809,7 @@ int boom () {
 
     /* any better information in there? */
     for (i=0; i<boom_history; i++) if (i<turn) {
-      opp_earlier = opp_history[turn-i]; my_earlier = my_history[turn-i];
+      opp_earlier = ROSHAMBO_BOT_opp_history[turn-i]; my_earlier = ROSHAMBO_BOT_my_history[turn-i];
 
       r = boom_secondary_stats[i][opp_earlier][my_earlier][0];
       p = boom_secondary_stats[i][opp_earlier][my_earlier][1];
@@ -2841,9 +2841,9 @@ int boom () {
   }
 
   /* got the predicted probabilities of r-p-s -- determine suggested action */
-  best = pred_s - pred_p; action = rock;
-  if ((pred_r - pred_s) > best) {best = pred_r - pred_s; action = paper;}
-  if ((pred_p - pred_r) > best) action = scissors;
+  best = pred_s - pred_p; action = ROSHAMBO_BOT_rock;
+  if ((pred_r - pred_s) > best) {best = pred_r - pred_s; action = ROSHAMBO_BOT_paper;}
+  if ((pred_p - pred_r) > best) action = ROSHAMBO_BOT_scissors;
 
   /* modify the action according to the gears */
   best = boom_gear_success[0]; boom_gear = 0;
@@ -2881,7 +2881,7 @@ int boom () {
 
 /*  Entrant:  Shofar (11)   Rudi Cilibrasi (USA)  */
 
-struct strat {
+struct ROSHAMBO_BOT_strat {
     int(*pname)();
     void (*init)();
     double score;
@@ -2890,10 +2890,10 @@ struct strat {
     int move;
 };
 
-struct strat s[128];
+struct ROSHAMBO_BOT_strat s[128];
 int sc = 0;
 int chose = -1;
-struct strat *cur;
+struct ROSHAMBO_BOT_strat *cur;
 
 void narcissus_init() {
     static int whoiam = 0;
@@ -2902,7 +2902,7 @@ void narcissus_init() {
 }
 
 int narcissus_play() {
-    int mymove = my_history[my_history[0]];
+    int mymove = ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]];
     return (cur->ivar[0] + mymove) % 3;
 }
 
@@ -2913,7 +2913,7 @@ void mirror_init() {
 }
 
 int mirror_play() {
-    int hermove = opp_history[opp_history[0]];
+    int hermove = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]];
     return (cur->ivar[0] + hermove) % 3;
 }
 
@@ -2929,11 +2929,11 @@ int single_play() {
 
 void pattern_init() {
     int i;
-    cur->ivar[0] = 1 + random() / (maxrandom / 5);
+    cur->ivar[0] = 1 + random() / (ROSHAMBO_BOT_maxrandom / 5);
     cur->ivar[1] = 0;
     for (i = 0; i < cur->ivar[0]; ++i)
       {
-        cur->ivar[i+2] = 3*(random() / maxrandom) ;
+        cur->ivar[i+2] = 3*(random() / ROSHAMBO_BOT_maxrandom) ;
       }
 }
 
@@ -2949,8 +2949,8 @@ void update_score() {
     int worstguy;
     int hermove, winmove, losemove;
     worstguy = 0; /* -db */
-    if (opp_history[0] == 0) return;
-    hermove = opp_history[opp_history[0]];
+    if (ROSHAMBO_BOT_opp_history[0] == 0) return;
+    hermove = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]];
     winmove = (hermove + 1) % 3;
     losemove = (hermove + 2) % 3;
     for (i = 0; i < sc; ++i)
@@ -3012,7 +3012,7 @@ int shofar(void)
         cur->move = cur->pname();
         total += pow(base, s[i].score);
       }
-    r = (random() / maxrandom) * total;
+    r = (random() / ROSHAMBO_BOT_maxrandom) * total;
     for (i = 0; i < sc; ++i)
       {
         r -= pow(base, s[i].score);
@@ -3020,38 +3020,38 @@ int shofar(void)
       }
     assert(i >= 0 && i < sc);
     chose = i;
-/*      printf("Her move was %d, my move was %d\n", opp_history[opp_history[0]], s[chose].move); */
+/*      printf("Her move was %d, my move was %d\n", ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]], s[chose].move); */
     return s[chose].move;
 }
 
 /* naivete - poor roshambo player, written by cstone@pobox.com */
-#define THRESH_BIGOM 0.42
-#define THRESH_OKBEDUMB 0.75
+#define ROSHAMBO_BOT_THRESH_BIGOM 0.42
+#define ROSHAMBO_BOT_THRESH_OKBEDUMB 0.75
 
-enum { ROCK=0, PAPER, SCISSORS };
+enum { ROSHAMBO_BOT_ROCK=0, ROSHAMBO_BOT_PAPER, ROSHAMBO_BOT_SCISSORS };
 
 int triprescalc(int *x) {
     return((1<<*x)|(1<<*(x+1))|(1<<*(x+2)));
 }
 
 int win(int x) {
-    if(x == ROCK) return PAPER;
-    if(x == PAPER) return SCISSORS;
-    return ROCK;
+    if(x == ROSHAMBO_BOT_ROCK) return ROSHAMBO_BOT_PAPER;
+    if(x == ROSHAMBO_BOT_PAPER) return ROSHAMBO_BOT_SCISSORS;
+    return ROSHAMBO_BOT_ROCK;
 }
 
 int filcompltrip(int *x) {
     int c=0;
 
     c=(1<<*x)|(1<<*(x+1));
-    if((c^(1<<ROCK)) == 7) return ROCK;
-    if((c^(1<<PAPER)) == 7) return PAPER;
-    return SCISSORS;
+    if((c^(1<<ROSHAMBO_BOT_ROCK)) == 7) return ROSHAMBO_BOT_ROCK;
+    if((c^(1<<ROSHAMBO_BOT_PAPER)) == 7) return ROSHAMBO_BOT_PAPER;
+    return ROSHAMBO_BOT_SCISSORS;
 }
 
 int copychecklast(int offset) {
 
-    if(opp_history[my_history[0]]==win(my_history[0]+offset)) 
+    if(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]==win(ROSHAMBO_BOT_my_history[0]+offset)) 
         return(1);
     else return(0);
 }
@@ -3066,19 +3066,19 @@ int naivete(void)
     int tempint0, tempint1;
     float tempfloat0;
 
-    if(my_history[0]==0) 
+    if(ROSHAMBO_BOT_my_history[0]==0) 
         c_trseqrpt=c_trresrpt=f_notwoseq=f_nothreeseq=f_bigom=f_cpyoffset=
           om=oc[0]=oc[1]=oc[2]=pcts[0]=pcts[1]=pcts[2]=tots[0]=tots[1]=
           tots[2]=avgs[0]=avgs[1]=avgs[2]=0;
 
-    if(my_history[0]<=3) 
-        return(SCISSORS);
+    if(ROSHAMBO_BOT_my_history[0]<=3) 
+        return(ROSHAMBO_BOT_SCISSORS);
 
-    tempint0=triprescalc(&opp_history[my_history[0]-2]);
+    tempint0=triprescalc(&ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-2]);
 
-    if(opp_history[my_history[0]]==ROCK) oc[ROCK]++;
-    if(opp_history[my_history[0]]==PAPER) oc[PAPER]++;
-    if(opp_history[my_history[0]]==SCISSORS) oc[SCISSORS]++;
+    if(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]==ROSHAMBO_BOT_ROCK) oc[ROSHAMBO_BOT_ROCK]++;
+    if(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]==ROSHAMBO_BOT_PAPER) oc[ROSHAMBO_BOT_PAPER]++;
+    if(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]==ROSHAMBO_BOT_SCISSORS) oc[ROSHAMBO_BOT_SCISSORS]++;
 
     switch(tempint0) {
 
@@ -3096,42 +3096,42 @@ int naivete(void)
     }
 
     if(c_trseqrpt > 2) 
-        return(win(opp_history[my_history[0]-2]));
+        return(win(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-2]));
 
     if(c_trresrpt > 2)
-        return(win(filcompltrip(&opp_history[my_history[0]-1])));
+        return(win(filcompltrip(&ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-1])));
 
-    if(!(my_history[0] % 3)) {
+    if(!(ROSHAMBO_BOT_my_history[0] % 3)) {
         if(f_cpyoffset && !copychecklast(f_cpyoffset))
             f_cpyoffset=0;
         }
 
-        if(f_bigom && !(my_history[0] && 7)) {
-            if(f_bigom >= THRESH_OKBEDUMB)
+        if(f_bigom && !(ROSHAMBO_BOT_my_history[0] && 7)) {
+            if(f_bigom >= ROSHAMBO_BOT_THRESH_OKBEDUMB)
                 f_okbedumb=1;
             else
                 f_okbedumb=0;
         }
 
-        if(!(my_history[0] % 23)) {
+        if(!(ROSHAMBO_BOT_my_history[0] % 23)) {
             int i;
 
             f_cpyoffset=0;
             for(i=0;i>=-4;i--) {
-              if((opp_history[my_history[0]]==win(my_history[my_history[0]+i])) &&
-                 (opp_history[my_history[0]-1]==win(my_history[my_history[0]+i-1])) &&
-                 (opp_history[my_history[0]-2]==win(my_history[my_history[0]+i-2])) &&
-                 (opp_history[my_history[0]-3]==win(my_history[my_history[0]+i-3])))
+              if((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]==win(ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]+i])) &&
+                 (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-1]==win(ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]+i-1])) &&
+                 (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-2]==win(ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]+i-2])) &&
+                 (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-3]==win(ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]+i-3])))
                  f_cpyoffset=i;
             }
         }
         /* i don't like this */
-        if(!(my_history[0] % 27)) {
-            int i=my_history[0]-26;
+        if(!(ROSHAMBO_BOT_my_history[0] % 27)) {
+            int i=ROSHAMBO_BOT_my_history[0]-26;
             f_notwoseq=f_nothreeseq=1;
-            for(;i<=my_history[0];i++) 
-                if(opp_history[i-1] == opp_history[i]) {
-                    if((i<my_history[0])&&(opp_history[i]==opp_history[i+1])){
+            for(;i<=ROSHAMBO_BOT_my_history[0];i++) 
+                if(ROSHAMBO_BOT_opp_history[i-1] == ROSHAMBO_BOT_opp_history[i]) {
+                    if((i<ROSHAMBO_BOT_my_history[0])&&(ROSHAMBO_BOT_opp_history[i]==ROSHAMBO_BOT_opp_history[i+1])){
                         f_nothreeseq=0;
                         f_notwoseq=0;
                         break;
@@ -3139,13 +3139,13 @@ int naivete(void)
                       f_notwoseq=0;
                 }
         }
-        if(!(my_history[0]%10)) {
-            tempfloat0=my_history[0];
+        if(!(ROSHAMBO_BOT_my_history[0]%10)) {
+            tempfloat0=ROSHAMBO_BOT_my_history[0];
 
-            if(my_history[0] > 10) {
-                avgs[0]=tots[0]/((my_history[0]-10)/10);
-                avgs[1]=tots[1]/((my_history[0]-10)/10);
-                avgs[2]=tots[2]/((my_history[0]-10)/10);
+            if(ROSHAMBO_BOT_my_history[0] > 10) {
+                avgs[0]=tots[0]/((ROSHAMBO_BOT_my_history[0]-10)/10);
+                avgs[1]=tots[1]/((ROSHAMBO_BOT_my_history[0]-10)/10);
+                avgs[2]=tots[2]/((ROSHAMBO_BOT_my_history[0]-10)/10);
             }
             tots[0]+=(pcts[0]=oc[0]/tempfloat0);
             tots[1]+=(pcts[1]=oc[1]/tempfloat0);
@@ -3153,29 +3153,29 @@ int naivete(void)
         }
 
         if(f_cpyoffset) 
-            return(win(win(my_history[my_history[0]])));
+            return(win(win(ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]])));
 
-        if(oc[ROCK] >= oc[PAPER]) {
-            if((oc[SCISSORS] > oc[PAPER]) && (oc[SCISSORS] > oc[ROCK])) om=SCISSORS;
-            else om=ROCK;
+        if(oc[ROSHAMBO_BOT_ROCK] >= oc[ROSHAMBO_BOT_PAPER]) {
+            if((oc[ROSHAMBO_BOT_SCISSORS] > oc[ROSHAMBO_BOT_PAPER]) && (oc[ROSHAMBO_BOT_SCISSORS] > oc[ROSHAMBO_BOT_ROCK])) om=ROSHAMBO_BOT_SCISSORS;
+            else om=ROSHAMBO_BOT_ROCK;
         } else {
-            if(oc[SCISSORS] > oc[PAPER]) om = SCISSORS;
-            else om=PAPER;
+            if(oc[ROSHAMBO_BOT_SCISSORS] > oc[ROSHAMBO_BOT_PAPER]) om = ROSHAMBO_BOT_SCISSORS;
+            else om=ROSHAMBO_BOT_PAPER;
         }
-        tempfloat0=my_history[0];
-        if((my_history[0] > 30) && (oc[om]/tempfloat0 > THRESH_BIGOM)) 
+        tempfloat0=ROSHAMBO_BOT_my_history[0];
+        if((ROSHAMBO_BOT_my_history[0] > 30) && (oc[om]/tempfloat0 > ROSHAMBO_BOT_THRESH_BIGOM)) 
             f_bigom=1;
         else
             f_bigom=0;
 
-        switch(my_history[0] % 6) {
+        switch(ROSHAMBO_BOT_my_history[0] % 6) {
 
         case 4:
             if(f_bigom) {
                 tempint0=win(om);
                 break;
             }
-            if(!(my_history[0] % 16)) {
+            if(!(ROSHAMBO_BOT_my_history[0] % 16)) {
                 tempint0=win(om);
                 break;
             }  
@@ -3193,7 +3193,7 @@ int naivete(void)
             break;
                 
         case 3:
-            if(my_history[0] % 12)
+            if(ROSHAMBO_BOT_my_history[0] % 12)
                 tempint0=win(win(om));
             tempint0=win(om);
             break;
@@ -3202,26 +3202,26 @@ int naivete(void)
             if(f_bigom)
                 tempint0=win(om);
             else            
-                tempint0=win(my_history[my_history[0]]);
+                tempint0=win(ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]);
             break;
 
         case 1:
             if(f_okbedumb)
                 tempint0=win(om);
             else
-                tempint0=win(opp_history[my_history[0]]);
+                tempint0=win(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]]);
             break;
 
         case 0:
             tempint0=win(om);
             break;
         }       
-        if(f_notwoseq && (tempint0==win(opp_history[my_history[0]])))
+        if(f_notwoseq && (tempint0==win(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]])))
             tempint0=win(tempint0);
         
         if(f_nothreeseq && 
-             (opp_history[my_history[0]] == opp_history[my_history[0]-1]) &&
-             (tempint0==win(opp_history[my_history[0]])))
+             (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]] == ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]-1]) &&
+             (tempint0==win(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_my_history[0]])))
             tempint0=win(tempint0);      
                 
         return(tempint0);
@@ -3255,9 +3255,9 @@ int naivete(void)
 */
 int actr_lag2_decay (void)
 {
-  double frequencies[3],score,p,best_score=maxrandom;
+  double frequencies[3],score,p,best_score=ROSHAMBO_BOT_maxrandom;
  
-  int back1 = 0,back2 = 0,i,winner,index=my_history[0];
+  int back1 = 0,back2 = 0,i,winner,index=ROSHAMBO_BOT_my_history[0];
         
   winner = 0; /* -db */
   for(i=0;i<3;i++)
@@ -3265,14 +3265,14 @@ int actr_lag2_decay (void)
  
   if (index >= 2)
   {
-     back2=opp_history[index - 1];
-     back1=opp_history[index];
+     back2=ROSHAMBO_BOT_opp_history[index - 1];
+     back1=ROSHAMBO_BOT_opp_history[index];
   }
  
   for(i=0;i<index;i++)
   {
-     if (i >= 2 && opp_history[i - 1] == back2 && opp_history[i] == back1)
-       frequencies[opp_history[i + 1]] +=  pow(index - i, -0.5); 
+     if (i >= 2 && ROSHAMBO_BOT_opp_history[i - 1] == back2 && ROSHAMBO_BOT_opp_history[i] == back1)
+       frequencies[ROSHAMBO_BOT_opp_history[i + 1]] +=  pow(index - i, -0.5); 
   }
                 
   for (i=0;i<3;i++)
@@ -3287,13 +3287,13 @@ int actr_lag2_decay (void)
        p=random();
      }while(p == 0.0);
  
-     p /= maxrandom;
+     p /= ROSHAMBO_BOT_maxrandom;
      p= .25 * log ((1 - p) / p);
  
      /* end of noise calculation */
      score = p + log(frequencies[i]);
         
-     if (best_score == maxrandom || score > best_score)
+     if (best_score == ROSHAMBO_BOT_maxrandom || score > best_score)
      {
        winner=i;
        best_score = score;
@@ -3308,7 +3308,7 @@ int actr_lag2_decay (void)
 
 int markov5 ()
 {
-#define markovLength 243
+#define ROSHAMBO_BOT_markovLength 243
   /* This bot is designed to win the current match. */
 
     int i,j;
@@ -3318,18 +3318,18 @@ int markov5 ()
     double newprob, cumprob;
     int retval;     /* the value to return */
     static int windowSize=5;
-    /* int markovLength=9; */ /*3^size*/
+    /* int ROSHAMBO_BOT_markovLength=9; */ /*3^size*/
     static int wins, losses;
     static double percentWins,percentLosses, margin;
 
-    static double MarkovChain[markovLength][3];
-    static int Markovuse[markovLength];
-    static int MarkovTally[markovLength][3];
+    static double MarkovChain[ROSHAMBO_BOT_markovLength][3];
+    static int Markovuse[ROSHAMBO_BOT_markovLength];
+    static int MarkovTally[ROSHAMBO_BOT_markovLength][3];
 
     retval = 0; /* -db */
-    if (my_history[0]==0)   /* if we're just starting, init the array. */
+    if (ROSHAMBO_BOT_my_history[0]==0)   /* if we're just starting, init the array. */
     {
-        for(i=0;i<markovLength;i++)         /* for every row */
+        for(i=0;i<ROSHAMBO_BOT_markovLength;i++)         /* for every row */
         {
             Markovuse[i]=0;
             for(j=0;j<3;j++)            /* reset every column */
@@ -3346,26 +3346,26 @@ int markov5 ()
     else
     {
       /* check if we won or lost on the last turn */
-        if ((opp_history[opp_history[0]]+1)%3 == my_history[my_history[0]])
+        if ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]+1)%3 == ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]])
             wins++;
-        else if ((opp_history[opp_history[0]]+2)%3 == my_history[my_history[0]])
+        else if ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]+2)%3 == ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]])
             losses++;
 
         /* accumulate our stats       */
-        percentWins = (double)wins/(double)my_history[0];
-        percentLosses = (double)losses/(double)my_history[0];
+        percentWins = (double)wins/(double)ROSHAMBO_BOT_my_history[0];
+        percentLosses = (double)losses/(double)ROSHAMBO_BOT_my_history[0];
     }/* else */
 
     /*******This is where we update the markov chain**************/
 
     /* regardless, update the markov chain. */
 
-    if(opp_history[0]>windowSize)       /* if we're past P1.. remember, P1=P0 */
+    if(ROSHAMBO_BOT_opp_history[0]>windowSize)       /* if we're past P1.. remember, P1=P0 */
     {
         markovindex=0;
         for(i=windowSize;i>=1;i--)
             markovindex+=((i==1)?
-                (opp_history[opp_history[0]-i]):(opp_history[opp_history[0]-i]*3));
+                (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]):(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]*3));
 
         /* now if we haven't used the row before, zero it and put a one in the */
         /* right place */
@@ -3374,12 +3374,12 @@ int markov5 ()
             Markovuse[markovindex]=1;
             for(j=0;j<3;j++)
                 MarkovChain[markovindex][j]=0;
-            MarkovChain[markovindex][opp_history[opp_history[0]]]=1.0;
-            MarkovTally[markovindex][opp_history[opp_history[0]]]++;
+            MarkovChain[markovindex][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]=1.0;
+            MarkovTally[markovindex][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]++;
         }/* if */
         else /* ah. it's been used before, so now we distribut it across all used ones. */
         {/* duh. don't forget to check that this is a new one */
-            MarkovTally[markovindex][opp_history[opp_history[0]]]++;
+            MarkovTally[markovindex][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]++;
 
             nonzeros=0;
 
@@ -3405,7 +3405,7 @@ int markov5 ()
     /* if we're more that 60% behind or ahead, bail. also, if we haven't done */
     /* even one move, don't use the markov chain if we don't have a previous */
     /* move to look up. */
-    if ((my_history[0]<=windowSize)/*||(score<-50)*/)
+    if ((ROSHAMBO_BOT_my_history[0]<=windowSize)/*||(score<-50)*/)
         retval=(biased_roshambo(0.33333,0.33333));
 
     else
@@ -3417,10 +3417,10 @@ int markov5 ()
         markovindex=0;
         for(i=windowSize-1;i>=0;i--)
             markovindex+=((i==0)?
-                (opp_history[opp_history[0]-i]):(opp_history[opp_history[0]-i]*3));
+                (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]):(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]*3));
 
         /* generate a continuous uniform variate */
-        newprob=random()/maxrandom;
+        newprob=random()/ROSHAMBO_BOT_maxrandom;
         /* now do a cumulative probability. */
         cumprob=0;
         for(j=0;j<3;j++)
@@ -3445,7 +3445,7 @@ int markov5 ()
 
 int markovbails ()
 {
-#define markovLength 243
+#define ROSHAMBO_BOT_markovLength 243
   /* This bot is designed to win the current match. */
 
     int i,j;
@@ -3455,18 +3455,18 @@ int markovbails ()
     double newprob, cumprob;
     int retval;     /* the value to return */
     static int windowSize=5;
-    /* int markovLength=9; */ /*3^size*/
+    /* int ROSHAMBO_BOT_markovLength=9; */ /*3^size*/
     static int wins, losses;
     static double percentWins,percentLosses, margin;
 
-    static double MarkovChain[markovLength][3];
-    static int Markovuse[markovLength];
-    static int MarkovTally[markovLength][3];
+    static double MarkovChain[ROSHAMBO_BOT_markovLength][3];
+    static int Markovuse[ROSHAMBO_BOT_markovLength];
+    static int MarkovTally[ROSHAMBO_BOT_markovLength][3];
 
     retval = 0; /* -db */
-    if (my_history[0]==0)   /* if we're just starting, init the array. */
+    if (ROSHAMBO_BOT_my_history[0]==0)   /* if we're just starting, init the array. */
     {
-        for(i=0;i<markovLength;i++)         /* for every row */
+        for(i=0;i<ROSHAMBO_BOT_markovLength;i++)         /* for every row */
         {
             Markovuse[i]=0;
             for(j=0;j<3;j++)            /* reset every column */
@@ -3483,26 +3483,26 @@ int markovbails ()
     else
     {
       /* check if we won or lost on the last turn */
-        if ((opp_history[opp_history[0]]+1)%3 == my_history[my_history[0]])
+        if ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]+1)%3 == ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]])
             wins++;
-        else if ((opp_history[opp_history[0]]+2)%3 == my_history[my_history[0]])
+        else if ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]+2)%3 == ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]])
             losses++;
 
         /* accumulate our stats       */
-        percentWins = (double)wins/(double)my_history[0];
-        percentLosses = (double)losses/(double)my_history[0];
+        percentWins = (double)wins/(double)ROSHAMBO_BOT_my_history[0];
+        percentLosses = (double)losses/(double)ROSHAMBO_BOT_my_history[0];
     }/* else */
 
     /*******This is where we update the markov chain**************/
 
     /* regardless, update the markov chain. */
 
-    if(opp_history[0]>windowSize)       /* if we're past P1.. remember, P1=P0 */
+    if(ROSHAMBO_BOT_opp_history[0]>windowSize)       /* if we're past P1.. remember, P1=P0 */
     {
         markovindex=0;
         for(i=windowSize;i>=1;i--)
             markovindex+=((i==1)?
-                (opp_history[opp_history[0]-i]):(opp_history[opp_history[0]-i]*3));
+                (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]):(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]*3));
 
         /* now if we haven't used the row before, zero it and put a one in the */
         /* right place */
@@ -3511,12 +3511,12 @@ int markovbails ()
             Markovuse[markovindex]=1;
             for(j=0;j<3;j++)
                 MarkovChain[markovindex][j]=0;
-            MarkovChain[markovindex][opp_history[opp_history[0]]]=1.0;
-            MarkovTally[markovindex][opp_history[opp_history[0]]]++;
+            MarkovChain[markovindex][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]=1.0;
+            MarkovTally[markovindex][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]++;
         }/* if */
         else /* ah. it's been used before, so now we distribut it across all used ones. */
         {/* duh. don't forget to check that this is a new one */
-            MarkovTally[markovindex][opp_history[opp_history[0]]]++;
+            MarkovTally[markovindex][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]++;
 
             nonzeros=0;
 
@@ -3542,7 +3542,7 @@ int markovbails ()
     /* if we're more that 60% behind or ahead, bail. also, if we haven't done */
     /* even one move, don't use the markov chain if we don't have a previous */
     /* move to look up. */
-    if ((my_history[0]<=windowSize)||(score<-50))
+    if ((ROSHAMBO_BOT_my_history[0]<=windowSize)||(score<-50))
         retval=(biased_roshambo(0.33333,0.33333));
 
     else
@@ -3554,10 +3554,10 @@ int markovbails ()
         markovindex=0;
         for(i=windowSize-1;i>=0;i--)
             markovindex+=((i==0)?
-                (opp_history[opp_history[0]-i]):(opp_history[opp_history[0]-i]*3));
+                (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]):(ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-i]*3));
 
         /* generate a continuous uniform variate */
-        newprob=random()/maxrandom;
+        newprob=random()/ROSHAMBO_BOT_maxrandom;
         /* now do a cumulative probability. */
         cumprob=0;
         for(j=0;j<3;j++)
@@ -3586,11 +3586,11 @@ int markovbails ()
  * davidson@cs.ualberta.ca                                    *
  **************************************************************/
 
-#define DEPTH            3
-#define NUM_RECENT      20
+#define ROSHAMBO_BOT_DEPTH            3
+#define ROSHAMBO_BOT_NUM_RECENT      20
 
-#define RAND_FLOAT (random() / maxrandom) 
-#define RAND_INT(x)   (int)((RAND_FLOAT * (x)))
+#define ROSHAMBO_BOT_RAND_FLOAT (random() / ROSHAMBO_BOT_maxrandom) 
+#define ROSHAMBO_BOT_RAND_INT(x)   (int)((ROSHAMBO_BOT_RAND_FLOAT * (x)))
 
 int granite() {
     int i,j,k,m,r,p,s;
@@ -3606,17 +3606,17 @@ int granite() {
     static int my_wins; static int opp_wins;
 
     /* number of games played */
-    int ng = opp_history[0]; 
+    int ng = ROSHAMBO_BOT_opp_history[0]; 
 
-    int oL = opp_history[ng];    
-    int oL1 = opp_history[ng-1];    
-    int oL2 = opp_history[ng-2];    
-    int oL3 = opp_history[ng-3];    
+    int oL = ROSHAMBO_BOT_opp_history[ng];    
+    int oL1 = ROSHAMBO_BOT_opp_history[ng-1];    
+    int oL2 = ROSHAMBO_BOT_opp_history[ng-2];    
+    int oL3 = ROSHAMBO_BOT_opp_history[ng-3];    
 
-    int mL = my_history[ng];    
-    int mL1 = my_history[ng-1];    
-    int mL2 = my_history[ng-2];    
-    int mL3 = my_history[ng-3];    
+    int mL = ROSHAMBO_BOT_my_history[ng];    
+    int mL1 = ROSHAMBO_BOT_my_history[ng-1];    
+    int mL2 = ROSHAMBO_BOT_my_history[ng-2];    
+    int mL3 = ROSHAMBO_BOT_my_history[ng-3];    
 
     /********************************************/
 
@@ -3636,60 +3636,60 @@ int granite() {
                 }
             }
         }
-        return( RAND_INT(3));
+        return( ROSHAMBO_BOT_RAND_INT(3));
     }
 
     my_wins = 0;
     opp_wins = 0;
-    for (i=ng;i>0&&i>ng-NUM_RECENT;i--) {
-        oL = opp_history[i];
-        mL = my_history[i];
-        if ((oL == rock && mL == paper) || (oL == paper && mL == scissors) || 
-            (oL == scissors && mL == rock)) {
+    for (i=ng;i>0&&i>ng-ROSHAMBO_BOT_NUM_RECENT;i--) {
+        oL = ROSHAMBO_BOT_opp_history[i];
+        mL = ROSHAMBO_BOT_my_history[i];
+        if ((oL == ROSHAMBO_BOT_rock && mL == ROSHAMBO_BOT_paper) || (oL == ROSHAMBO_BOT_paper && mL == ROSHAMBO_BOT_scissors) || 
+            (oL == ROSHAMBO_BOT_scissors && mL == ROSHAMBO_BOT_rock)) {
             my_wins++;
-        } else if ((oL == rock && mL == scissors) || (oL == paper && mL == rock) ||
-        (oL == scissors && mL == paper)) {
+        } else if ((oL == ROSHAMBO_BOT_rock && mL == ROSHAMBO_BOT_scissors) || (oL == ROSHAMBO_BOT_paper && mL == ROSHAMBO_BOT_rock) ||
+        (oL == ROSHAMBO_BOT_scissors && mL == ROSHAMBO_BOT_paper)) {
             opp_wins++;
         }
     }
-    oL = opp_history[ng];
-    mL = my_history[ng];
+    oL = ROSHAMBO_BOT_opp_history[ng];
+    mL = ROSHAMBO_BOT_my_history[ng];
 
 
-    noise = (float)(opp_wins/NUM_RECENT);
+    noise = (float)(opp_wins/ROSHAMBO_BOT_NUM_RECENT);
 
 
     /* TABULATE OVERALL FEQUENCY OF ACTIONS */
     p_opp_0[oL]++;
     p_my_0[mL]++;
 
-    r = p_opp_0[rock]; p = p_opp_0[paper]; s = p_opp_0[scissors];
+    r = p_opp_0[ROSHAMBO_BOT_rock]; p = p_opp_0[ROSHAMBO_BOT_paper]; s = p_opp_0[ROSHAMBO_BOT_scissors];
 
     /* GET FREQUENCIES OF ACTIONS FOLLOWING OUR LAST MOVES */
-    if (ng > 1) { /* DEPTH == 1 */
+    if (ng > 1) { /* ROSHAMBO_BOT_DEPTH == 1 */
         ++p_opp_1[oL][oL1];
         ++p_my_1[oL][mL1];
-        r += p_opp_1[rock][oL] + p_my_1[rock][mL];
-        p += p_opp_1[paper][oL] + p_my_1[paper][mL];
-        s += p_opp_1[scissors][oL] + p_my_1[scissors][mL];
+        r += p_opp_1[ROSHAMBO_BOT_rock][oL] + p_my_1[ROSHAMBO_BOT_rock][mL];
+        p += p_opp_1[ROSHAMBO_BOT_paper][oL] + p_my_1[ROSHAMBO_BOT_paper][mL];
+        s += p_opp_1[ROSHAMBO_BOT_scissors][oL] + p_my_1[ROSHAMBO_BOT_scissors][mL];
                 
-        if (ng > 2 && DEPTH >= 2) { /* DEPTH == 2 */
+        if (ng > 2 && ROSHAMBO_BOT_DEPTH >= 2) { /* ROSHAMBO_BOT_DEPTH == 2 */
             ++p_opp_2[oL][oL1][oL2];
             ++p_my_2[oL][mL1][mL2];
             ++p_oppmy_2[oL][oL1][mL2];
             ++p_myopp_2[oL][mL1][oL2];
         
-            r += p_opp_2[rock][oL][oL1] + p_my_2[rock][mL][mL1] + p_oppmy_2[rock][oL][mL1] + p_myopp_2[rock][mL][oL1];
-            p += p_opp_2[paper][oL][oL1] + p_my_2[paper][mL][mL1] + p_oppmy_2[paper][oL][mL1] + p_myopp_2[paper][mL][oL1];
-            s += p_opp_2[scissors][oL][oL1] + p_my_2[scissors][mL][mL1] + p_oppmy_2[scissors][oL][mL1] + p_myopp_2[scissors][mL][oL1];
+            r += p_opp_2[ROSHAMBO_BOT_rock][oL][oL1] + p_my_2[ROSHAMBO_BOT_rock][mL][mL1] + p_oppmy_2[ROSHAMBO_BOT_rock][oL][mL1] + p_myopp_2[ROSHAMBO_BOT_rock][mL][oL1];
+            p += p_opp_2[ROSHAMBO_BOT_paper][oL][oL1] + p_my_2[ROSHAMBO_BOT_paper][mL][mL1] + p_oppmy_2[ROSHAMBO_BOT_paper][oL][mL1] + p_myopp_2[ROSHAMBO_BOT_paper][mL][oL1];
+            s += p_opp_2[ROSHAMBO_BOT_scissors][oL][oL1] + p_my_2[ROSHAMBO_BOT_scissors][mL][mL1] + p_oppmy_2[ROSHAMBO_BOT_scissors][oL][mL1] + p_myopp_2[ROSHAMBO_BOT_scissors][mL][oL1];
             
-            if (ng > 3 && DEPTH >= 3) { /* DEPTH == 3 */
+            if (ng > 3 && ROSHAMBO_BOT_DEPTH >= 3) { /* ROSHAMBO_BOT_DEPTH == 3 */
             ++p_opp_3[oL][oL1][oL2][oL3];
             ++p_my_3[oL][mL1][mL2][mL3];
             
-                r += p_opp_3[rock][oL][oL1][oL2] + p_my_3[rock][mL][mL1][mL2];
-                p += p_opp_3[paper][oL][oL1][oL2] + p_my_3[paper][mL][mL1][mL2];
-                s += p_opp_3[scissors][oL][oL1][oL2] + p_my_3[scissors][mL][mL1][mL2];
+                r += p_opp_3[ROSHAMBO_BOT_rock][oL][oL1][oL2] + p_my_3[ROSHAMBO_BOT_rock][mL][mL1][mL2];
+                p += p_opp_3[ROSHAMBO_BOT_paper][oL][oL1][oL2] + p_my_3[ROSHAMBO_BOT_paper][mL][mL1][mL2];
+                s += p_opp_3[ROSHAMBO_BOT_scissors][oL][oL1][oL2] + p_my_3[ROSHAMBO_BOT_scissors][mL][mL1][mL2];
             }
         }
     } 
@@ -3699,30 +3699,30 @@ int granite() {
     pS = s/(float)(r+p+s);
 
     if (pR > pP && pR > pS) { /* predict rock */
-        if (flip_biased_coin(noise*pS)) return rock;
-        else if (flip_biased_coin(noise*pP)) return scissors;
-        else return paper;
+        if (flip_biased_coin(noise*pS)) return ROSHAMBO_BOT_rock;
+        else if (flip_biased_coin(noise*pP)) return ROSHAMBO_BOT_scissors;
+        else return ROSHAMBO_BOT_paper;
     } else if (pP > pR && pP > pS) { /* predict paper */
-        if (flip_biased_coin(noise*pS)) return rock;
-        else if (flip_biased_coin(noise*pR)) return paper;
-        else return scissors;
+        if (flip_biased_coin(noise*pS)) return ROSHAMBO_BOT_rock;
+        else if (flip_biased_coin(noise*pR)) return ROSHAMBO_BOT_paper;
+        else return ROSHAMBO_BOT_scissors;
     } else if (pS > pP && pS > pR) { /* predict scissors */
-        if (flip_biased_coin(noise*pR)) return paper;
-        else if (flip_biased_coin(noise*pP)) return scissors;
-        else return rock;
+        if (flip_biased_coin(noise*pR)) return ROSHAMBO_BOT_paper;
+        else if (flip_biased_coin(noise*pP)) return ROSHAMBO_BOT_scissors;
+        else return ROSHAMBO_BOT_rock;
     } else if (pR == pS && pR == pP) {
-        return(RAND_INT(3));
+        return(ROSHAMBO_BOT_RAND_INT(3));
     } else if (pR == pP) {
-        if (flip_biased_coin(noise*pS)) return rock;
+        if (flip_biased_coin(noise*pS)) return ROSHAMBO_BOT_rock;
         return biased_roshambo(0.5,0.5);
     } else if (pR == pS) {
-        if (flip_biased_coin(noise*pP)) return scissors;
+        if (flip_biased_coin(noise*pP)) return ROSHAMBO_BOT_scissors;
         return biased_roshambo(0.5,0.0);
     } else if (pS == pP) {
-        if (flip_biased_coin(noise*pR)) return paper;
+        if (flip_biased_coin(noise*pR)) return ROSHAMBO_BOT_paper;
         return biased_roshambo(0.0,0.5);
     }
-    return (RAND_INT(3));
+    return (ROSHAMBO_BOT_RAND_INT(3));
 }
 /**********************************************************************/
 
@@ -3734,11 +3734,11 @@ int granite() {
  * davidson@cs.ualberta.ca                                    *
  **************************************************************/
 
-#define adDEPTH            3
-#define adNUM_RECENT      20
+#define ROSHAMBO_BOT_adDEPTH            3
+#define ROSHAMBO_BOT_adNUM_RECENT      20
 
-#define adRAND_FLOAT (random() / maxrandom) 
-#define adRAND_INT(x)   (int)((adRAND_FLOAT * (x)))
+#define ROSHAMBO_BOT_adRAND_FLOAT (random() / ROSHAMBO_BOT_maxrandom) 
+#define ROSHAMBO_BOT_adRAND_INT(x)   (int)((ROSHAMBO_BOT_adRAND_FLOAT * (x)))
 
 int marble() {
     int i,j,k,m,r,p,s;
@@ -3755,17 +3755,17 @@ int marble() {
     static int wins;
 
     /* number of games played */
-    int ng = opp_history[0]; 
+    int ng = ROSHAMBO_BOT_opp_history[0]; 
 
-    int oL = opp_history[ng];    
-    int oL1 = opp_history[ng-1];    
-    int oL2 = opp_history[ng-2];    
-    int oL3 = opp_history[ng-3];    
+    int oL = ROSHAMBO_BOT_opp_history[ng];    
+    int oL1 = ROSHAMBO_BOT_opp_history[ng-1];    
+    int oL2 = ROSHAMBO_BOT_opp_history[ng-2];    
+    int oL3 = ROSHAMBO_BOT_opp_history[ng-3];    
 
-    int mL = my_history[ng];    
-    int mL1 = my_history[ng-1];    
-    int mL2 = my_history[ng-2];    
-    int mL3 = my_history[ng-3];    
+    int mL = ROSHAMBO_BOT_my_history[ng];    
+    int mL1 = ROSHAMBO_BOT_my_history[ng-1];    
+    int mL2 = ROSHAMBO_BOT_my_history[ng-2];    
+    int mL3 = ROSHAMBO_BOT_my_history[ng-3];    
 
     /********************************************/
 
@@ -3785,7 +3785,7 @@ int marble() {
                 }
             }
         }
-        return( adRAND_INT(3));
+        return( ROSHAMBO_BOT_adRAND_INT(3));
     }
 
     if (last_pred == oL) wins++;
@@ -3796,33 +3796,33 @@ int marble() {
     p_opp_0[oL]++;
     p_my_0[mL]++;
 
-    r = p_opp_0[rock]; p = p_opp_0[paper]; s = p_opp_0[scissors];
+    r = p_opp_0[ROSHAMBO_BOT_rock]; p = p_opp_0[ROSHAMBO_BOT_paper]; s = p_opp_0[ROSHAMBO_BOT_scissors];
 
     /* GET FREQUENCIES OF ACTIONS FOLLOWING OUR LAST MOVES */
-    if (ng > 1) { /* adDEPTH == 1 */
+    if (ng > 1) { /* ROSHAMBO_BOT_adDEPTH == 1 */
         ++p_opp_1[oL][oL1];
         ++p_my_1[oL][mL1];
-        r += p_opp_1[rock][oL] + p_my_1[rock][mL];
-        p += p_opp_1[paper][oL] + p_my_1[paper][mL];
-        s += p_opp_1[scissors][oL] + p_my_1[scissors][mL];
+        r += p_opp_1[ROSHAMBO_BOT_rock][oL] + p_my_1[ROSHAMBO_BOT_rock][mL];
+        p += p_opp_1[ROSHAMBO_BOT_paper][oL] + p_my_1[ROSHAMBO_BOT_paper][mL];
+        s += p_opp_1[ROSHAMBO_BOT_scissors][oL] + p_my_1[ROSHAMBO_BOT_scissors][mL];
                 
-        if (ng > 2 && adDEPTH >= 2) { /* adDEPTH == 2 */
+        if (ng > 2 && ROSHAMBO_BOT_adDEPTH >= 2) { /* ROSHAMBO_BOT_adDEPTH == 2 */
             ++p_opp_2[oL][oL1][oL2];
             ++p_my_2[oL][mL1][mL2];
             ++p_oppmy_2[oL][oL1][mL2];
             ++p_myopp_2[oL][mL1][oL2];
         
-            r += p_opp_2[rock][oL][oL1] + p_my_2[rock][mL][mL1] + p_oppmy_2[rock][oL][mL1] + p_myopp_2[rock][mL][oL1];
-            p += p_opp_2[paper][oL][oL1] + p_my_2[paper][mL][mL1] + p_oppmy_2[paper][oL][mL1] + p_myopp_2[paper][mL][oL1];
-            s += p_opp_2[scissors][oL][oL1] + p_my_2[scissors][mL][mL1] + p_oppmy_2[scissors][oL][mL1] + p_myopp_2[scissors][mL][oL1];
+            r += p_opp_2[ROSHAMBO_BOT_rock][oL][oL1] + p_my_2[ROSHAMBO_BOT_rock][mL][mL1] + p_oppmy_2[ROSHAMBO_BOT_rock][oL][mL1] + p_myopp_2[ROSHAMBO_BOT_rock][mL][oL1];
+            p += p_opp_2[ROSHAMBO_BOT_paper][oL][oL1] + p_my_2[ROSHAMBO_BOT_paper][mL][mL1] + p_oppmy_2[ROSHAMBO_BOT_paper][oL][mL1] + p_myopp_2[ROSHAMBO_BOT_paper][mL][oL1];
+            s += p_opp_2[ROSHAMBO_BOT_scissors][oL][oL1] + p_my_2[ROSHAMBO_BOT_scissors][mL][mL1] + p_oppmy_2[ROSHAMBO_BOT_scissors][oL][mL1] + p_myopp_2[ROSHAMBO_BOT_scissors][mL][oL1];
             
-            if (ng > 3 && adDEPTH >= 3) { /* adDEPTH == 3 */
+            if (ng > 3 && ROSHAMBO_BOT_adDEPTH >= 3) { /* ROSHAMBO_BOT_adDEPTH == 3 */
                 ++p_opp_3[oL][oL1][oL2][oL3];
                 ++p_my_3[oL][mL1][mL2][mL3];
 
-                r += p_opp_3[rock][oL][oL1][oL2] + p_my_3[rock][mL][mL1][mL2];
-                p += p_opp_3[paper][oL][oL1][oL2] + p_my_3[paper][mL][mL1][mL2];
-                s += p_opp_3[scissors][oL][oL1][oL2] + p_my_3[scissors][mL][mL1][mL2];
+                r += p_opp_3[ROSHAMBO_BOT_rock][oL][oL1][oL2] + p_my_3[ROSHAMBO_BOT_rock][mL][mL1][mL2];
+                p += p_opp_3[ROSHAMBO_BOT_paper][oL][oL1][oL2] + p_my_3[ROSHAMBO_BOT_paper][mL][mL1][mL2];
+                s += p_opp_3[ROSHAMBO_BOT_scissors][oL][oL1][oL2] + p_my_3[ROSHAMBO_BOT_scissors][mL][mL1][mL2];
             }
         }
     } 
@@ -3832,55 +3832,55 @@ int marble() {
     pS = s/(float)(r+p+s);
 
     if (pR > pP && pR > pS) { /* predict rock */
-        last_pred = rock;
-        if (flip_biased_coin(noise*pS)) return rock;
-        else if (flip_biased_coin(noise*pP)) return scissors;
-        else return paper;
+        last_pred = ROSHAMBO_BOT_rock;
+        if (flip_biased_coin(noise*pS)) return ROSHAMBO_BOT_rock;
+        else if (flip_biased_coin(noise*pP)) return ROSHAMBO_BOT_scissors;
+        else return ROSHAMBO_BOT_paper;
     } else if (pP > pR && pP > pS) { /* predict paper */
-        last_pred = paper;
-        if (flip_biased_coin(noise*pS)) return rock;
-        else if (flip_biased_coin(noise*pR)) return paper;
-        else return scissors;
+        last_pred = ROSHAMBO_BOT_paper;
+        if (flip_biased_coin(noise*pS)) return ROSHAMBO_BOT_rock;
+        else if (flip_biased_coin(noise*pR)) return ROSHAMBO_BOT_paper;
+        else return ROSHAMBO_BOT_scissors;
     } else if (pS > pP && pS > pR) { /* predict scissors */
-        last_pred = scissors;
-        if (flip_biased_coin(noise*pR)) return paper;
-        else if (flip_biased_coin(noise*pP)) return scissors;
-        else return rock;
+        last_pred = ROSHAMBO_BOT_scissors;
+        if (flip_biased_coin(noise*pR)) return ROSHAMBO_BOT_paper;
+        else if (flip_biased_coin(noise*pP)) return ROSHAMBO_BOT_scissors;
+        else return ROSHAMBO_BOT_rock;
     } else if (pR == pS && pR == pP) {
         last_pred = -1;
-        return(adRAND_INT(3));
+        return(ROSHAMBO_BOT_adRAND_INT(3));
     } else if (pR == pP) {
         last_pred = biased_roshambo(0.5,0.5);
-        if (flip_biased_coin(noise*pS)) return rock;
+        if (flip_biased_coin(noise*pS)) return ROSHAMBO_BOT_rock;
         return last_pred;
     } else if (pR == pS) {
         last_pred = biased_roshambo(0.5,0.0);
-        if (flip_biased_coin(noise*pP)) return scissors;
+        if (flip_biased_coin(noise*pP)) return ROSHAMBO_BOT_scissors;
         return last_pred;
     } else if (pS == pP) {
         last_pred = biased_roshambo(0.0,0.5);
-        if (flip_biased_coin(noise*pR)) return paper;
+        if (flip_biased_coin(noise*pR)) return ROSHAMBO_BOT_paper;
         return last_pred;
     }
     last_pred = -1;
-    return (adRAND_INT(3));
+    return (ROSHAMBO_BOT_adRAND_INT(3));
 }
 /**********************************************************************/
 
 
 /*  Entrant:  ZQ Bot (22)   Neil Burch (Can)  */
 
-#define ZQ_MAXR 2147483645
-#define ZQ_TIE 0
-#define ZQ_WIN 1
-#define ZQ_LOSS 2
-#define ZQ_MOVE_PAIR( me, them ) (me)*3+(them)
-#define ZQ_MAX_NODES 65536
-#define ZQ_MAX_LOSS 15
+#define ROSHAMBO_BOT_ZQ_MAXR 2147483645
+#define ROSHAMBO_BOT_ZQ_TIE 0
+#define ROSHAMBO_BOT_ZQ_WIN 1
+#define ROSHAMBO_BOT_ZQ_LOSS 2
+#define ROSHAMBO_BOT_ZQ_MOVE_PAIR( me, them ) (me)*3+(them)
+#define ROSHAMBO_BOT_ZQ_MAX_NODES 65536
+#define ROSHAMBO_BOT_ZQ_MAX_LOSS 15
 
-typedef struct ZQ_NODE
+typedef struct ROSHAMBO_BOT_ZQ_NODE
 {
-  struct ZQ_NODE *children;
+  struct ROSHAMBO_BOT_ZQ_NODE *children;
   int count;
 } zq_node_t;
 
@@ -3902,7 +3902,7 @@ static zq_node_t *zq_new_nodeblock()
   int i;
   zq_node_t *t;
 
-  if( zq_num_nodeblocks >= ZQ_MAX_NODES )
+  if( zq_num_nodeblocks >= ROSHAMBO_BOT_ZQ_MAX_NODES )
     return NULL;
   zq_num_nodeblocks++;
   t = malloc( sizeof( zq_node_t ) * 9 );
@@ -3922,7 +3922,7 @@ static int zq_random_move()
 
   do {
     t = random();
-  } while( t > ZQ_MAXR );
+  } while( t > ROSHAMBO_BOT_ZQ_MAXR );
   return t % 3;
 }
 
@@ -3963,23 +3963,23 @@ static void zq_walk_history()
   int start, i;
   zq_node_t *node;
 
-  if( !my_history[ 0 ] )
+  if( !ROSHAMBO_BOT_my_history[ 0 ] )
     return;
 
   /* walk the tree for last zq_patt_length moves, last 6, ..., last move */
-  start = my_history[ 0 ] - zq_patt_length + 1;
+  start = ROSHAMBO_BOT_my_history[ 0 ] - zq_patt_length + 1;
   if( start < 1 )
     start = 1;
-  for( ; start <= my_history[ 0 ]; start++ ) {
+  for( ; start <= ROSHAMBO_BOT_my_history[ 0 ]; start++ ) {
     node = zq_root;
-    for( i = start; i <= my_history[ 0 ]; i++ ) {
+    for( i = start; i <= ROSHAMBO_BOT_my_history[ 0 ]; i++ ) {
       if( !node->children )
         if( !( node->children = zq_new_nodeblock() ) )
           break;
-      node = &( node->children[ ZQ_MOVE_PAIR( my_history[ i ],
-                                           opp_history[ i ] ) ] );
+      node = &( node->children[ ROSHAMBO_BOT_ZQ_MOVE_PAIR( ROSHAMBO_BOT_my_history[ i ],
+                                           ROSHAMBO_BOT_opp_history[ i ] ) ] );
     }
-    if( i > my_history[ 0 ] )
+    if( i > ROSHAMBO_BOT_my_history[ 0 ] )
       node->count++;
   }
 }
@@ -3991,17 +3991,17 @@ int zq_move()
   zq_node_t *node;
 
   move = 0; closs = 0; /* -db */
-  if( !my_history[ 0 ] ) {
+  if( !ROSHAMBO_BOT_my_history[ 0 ] ) {
     losestreak = 0;
     closs = 0;
     zq_init();
   }
 
-  if( zq_calc_result( my_history[ my_history[ 0 ] ],
-                      opp_history[ my_history[ 0 ] ] ) == ZQ_LOSS ) {
+  if( zq_calc_result( ROSHAMBO_BOT_my_history[ ROSHAMBO_BOT_my_history[ 0 ] ],
+                      ROSHAMBO_BOT_opp_history[ ROSHAMBO_BOT_my_history[ 0 ] ] ) == ROSHAMBO_BOT_ZQ_LOSS ) {
     if( losestreak ) {
       closs++;
-      if( closs == ZQ_MAX_LOSS ) {
+      if( closs == ROSHAMBO_BOT_ZQ_MAX_LOSS ) {
         losestreak = 0;
         closs = 0;
         zq_init();
@@ -4018,22 +4018,22 @@ int zq_move()
 
   for( i = 0; i < 3; i++ )
     counts[ i ] = 0;
-  start = my_history[ 0 ] - zq_patt_length + 1;
+  start = ROSHAMBO_BOT_my_history[ 0 ] - zq_patt_length + 1;
   if( start < 1 )
     start = 1;
-  for( ; start <= my_history[ 0 ]; start++ ) {
+  for( ; start <= ROSHAMBO_BOT_my_history[ 0 ]; start++ ) {
     node = zq_root;
-    for( i = start; i <= my_history[ 0 ]; i++ ) {
+    for( i = start; i <= ROSHAMBO_BOT_my_history[ 0 ]; i++ ) {
       if( !node->children )
         break;
-      node = &( node->children[ ZQ_MOVE_PAIR( my_history[ i ],
-                                           opp_history[ i ] ) ] );
+      node = &( node->children[ ROSHAMBO_BOT_ZQ_MOVE_PAIR( ROSHAMBO_BOT_my_history[ i ],
+                                           ROSHAMBO_BOT_opp_history[ i ] ) ] );
     }
-    if( i > my_history[ 0 ] )
+    if( i > ROSHAMBO_BOT_my_history[ 0 ] )
       if( node->children )
         for( i = 0; i < 3; i++ ) /* opponent choice */
           for( j = 0; j < 3; j++ ) /* my choice */
-            counts[ i ] += node->children[ ZQ_MOVE_PAIR( j, i ) ].count *
+            counts[ i ] += node->children[ ROSHAMBO_BOT_ZQ_MOVE_PAIR( j, i ) ].count *
               node->count;
   }
 
@@ -4079,9 +4079,9 @@ move = i;
 
 /*********** Lourdes Pena Castillo September, 1999 ***************/
 /*********** Sweet Rocky program                    **************/
-#define LMIN2 2
-#define LBAD -40
-#define LTH .80
+#define ROSHAMBO_BOT_LMIN2 2
+#define ROSHAMBO_BOT_LBAD -40
+#define ROSHAMBO_BOT_LTH .80
 
 int sweetrock ()
 {
@@ -4094,7 +4094,7 @@ int sweetrock ()
     int *pCount, *pLast, total, choice, pred;
     float diff;
 
-    if ( my_history[0] == 0 ) {
+    if ( ROSHAMBO_BOT_my_history[0] == 0 ) {
        memset(count, 0, sizeof(int)*27);
        memset(lastTime, 0, sizeof(int)*9);
        score = 0; 
@@ -4102,62 +4102,62 @@ int sweetrock ()
        return ( biased_roshambo(0.33, 0.33) ); /* Be optimal first */
     }
 
-    if ( my_history[0] < LMIN2 ) {
-       if ((opp_history[opp_history[0]] - my_history[my_history[0]] == 1) || 
-          (opp_history[opp_history[0]] - my_history[my_history[0]] == -2)) {
+    if ( ROSHAMBO_BOT_my_history[0] < ROSHAMBO_BOT_LMIN2 ) {
+       if ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == 1) || 
+          (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == -2)) {
           score --;
-       } else if (opp_history[opp_history[0]] != my_history[my_history[0]]) {
+       } else if (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] != ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]) {
           score ++;
        }
        return ( biased_roshambo(0.33, 0.33) ); /* Be optimal first */
     } 
 
     /* Add the previous result information */
-    pCount = count[my_history[my_history[0]-1]][opp_history[opp_history[0]-1]];
-    pCount[opp_history[opp_history[0]]]++; 
+    pCount = count[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]-1]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-1]];
+    pCount[ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]++; 
 
-    if ( opp_history[opp_history[0]] - my_history[my_history[0]] == 1 || 
-       opp_history[opp_history[0]] - my_history[my_history[0]] == -2) {
+    if ( ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == 1 || 
+       ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == -2) {
        score --;
-    } else if (opp_history[opp_history[0]] != my_history[my_history[0]]) {
+    } else if (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] != ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]) {
        score ++;
     }
 
-    if (score == LBAD ) goingbad = 1; 
+    if (score == ROSHAMBO_BOT_LBAD ) goingbad = 1; 
 
     if ( goingbad ) { /* oh-oh! Things are going bad! */
        return ( biased_roshambo(0.333, 0.333) ); /* better be optimal then */
     }
        
-    pLast = lastTime[my_history[my_history[0]-1]][opp_history[opp_history[0]-1]];
-    pLast[0] = opp_history[opp_history[0]];
+    pLast = lastTime[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]-1]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-1]];
+    pLast[0] = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]];
 
     /* Look what the numbers say the opponent will do next */
-    pCount = count[my_history[my_history[0]]][opp_history[opp_history[0]]];
-    total = pCount[rock] + pCount[paper] + pCount[scissors];
+    pCount = count[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]];
+    total = pCount[ROSHAMBO_BOT_rock] + pCount[ROSHAMBO_BOT_paper] + pCount[ROSHAMBO_BOT_scissors];
 
     if (total == 0 ){ /*Not information, then be optimal */
       return ( biased_roshambo(0.33, 0.33) ); 
     }
 
     /* What the opp. did last time */
-    pLast = lastTime[my_history[my_history[0]]][opp_history[opp_history[0]]];
+    pLast = lastTime[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]];
 
-    if ( (pCount[rock] > pCount[paper]) && (pCount[rock] > pCount[scissors]) ) {
-       pred = rock;
-       choice = paper; 
-    } else if ( pCount[paper] > pCount[scissors] ) { 
-       pred = paper;
-       choice = scissors; 
+    if ( (pCount[ROSHAMBO_BOT_rock] > pCount[ROSHAMBO_BOT_paper]) && (pCount[ROSHAMBO_BOT_rock] > pCount[ROSHAMBO_BOT_scissors]) ) {
+       pred = ROSHAMBO_BOT_rock;
+       choice = ROSHAMBO_BOT_paper; 
+    } else if ( pCount[ROSHAMBO_BOT_paper] > pCount[ROSHAMBO_BOT_scissors] ) { 
+       pred = ROSHAMBO_BOT_paper;
+       choice = ROSHAMBO_BOT_scissors; 
     } else { 
-       pred = scissors;
-       choice = rock; 
+       pred = ROSHAMBO_BOT_scissors;
+       choice = ROSHAMBO_BOT_rock; 
     }
 
     /* Maybe the choice is close! */
     if (pred != pLast[0]  ) { 
        diff = (float) pCount[pLast[0]] / (float) pCount[pred];  
-       if ( diff > LTH ) {
+       if ( diff > ROSHAMBO_BOT_LTH ) {
          if (flip_biased_coin(1 - diff)){
              return (pLast[0]);
          } else {
@@ -4174,8 +4174,8 @@ int sweetrock ()
 
 /*********** Lourdes Pena Castillo September, 1999 ***************/
 /*********** Piedra  program                        **************/
-#define LMIN1 2
-#define LBAD -40
+#define ROSHAMBO_BOT_LMIN1 2
+#define ROSHAMBO_BOT_LBAD -40
 
 int piedra ()
 {
@@ -4186,55 +4186,55 @@ int piedra ()
     static int score, goingbad;
     int *pCount, total;
 
-    if ( my_history[0] == 0 ) {
+    if ( ROSHAMBO_BOT_my_history[0] == 0 ) {
        memset(Count, 0, sizeof(int)*27);
        score = 0; 
        goingbad = 0; 
        return ( biased_roshambo(0.33, 0.33) ); /* Be optimal first */
     }
 
-    if ( my_history[0] < LMIN1 ) {
-       if ((opp_history[opp_history[0]] - my_history[my_history[0]] == 1) || 
-          (opp_history[opp_history[0]] - my_history[my_history[0]] == -2)) {
+    if ( ROSHAMBO_BOT_my_history[0] < ROSHAMBO_BOT_LMIN1 ) {
+       if ((ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == 1) || 
+          (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == -2)) {
           score --;
-       } else if (opp_history[opp_history[0]] != my_history[my_history[0]]) {
+       } else if (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] != ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]) {
           score ++;
        }
        return ( biased_roshambo(0.33, 0.33) ); /* Be optimal first */
     } 
 
     /* Add the previous result information */
-    pCount = Count[my_history[my_history[0]-1]][opp_history[opp_history[0]-1]];
-    pCount[opp_history[opp_history[0]]]++; 
+    pCount = Count[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]-1]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-1]];
+    pCount[ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]]++; 
        
 
-    if ( opp_history[opp_history[0]] - my_history[my_history[0]] == 1 || 
-       opp_history[opp_history[0]] - my_history[my_history[0]] == -2) {
+    if ( ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == 1 || 
+       ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] - ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] == -2) {
        score --;
-    } else if (opp_history[opp_history[0]] != my_history[my_history[0]]) {
+    } else if (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] != ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]) {
        score ++;
     }
 
-    if (score == LBAD ) goingbad = 1; 
+    if (score == ROSHAMBO_BOT_LBAD ) goingbad = 1; 
 
     if ( goingbad ) { /* oh-oh! Things are going bad! */
        return ( biased_roshambo(0.333, 0.333) ); /* better be optimal then */
     }
 
     /* Look what the numbers say the opponent will do next */
-    pCount = Count[my_history[my_history[0]]][opp_history[opp_history[0]]];
-    total = pCount[rock] + pCount[paper] + pCount[scissors];
+    pCount = Count[ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]];
+    total = pCount[ROSHAMBO_BOT_rock] + pCount[ROSHAMBO_BOT_paper] + pCount[ROSHAMBO_BOT_scissors];
 
     if (total == 0 ){ /*Not information, then be optimal */
        return ( biased_roshambo(0.33, 0.33) ); 
     }
 
-    if ( (pCount[rock] > pCount[paper]) && (pCount[rock] > pCount[scissors]) ) {
-      return( paper); 
-    } else if ( pCount[paper] > pCount[scissors] ) { 
-      return( scissors); 
+    if ( (pCount[ROSHAMBO_BOT_rock] > pCount[ROSHAMBO_BOT_paper]) && (pCount[ROSHAMBO_BOT_rock] > pCount[ROSHAMBO_BOT_scissors]) ) {
+      return( ROSHAMBO_BOT_paper); 
+    } else if ( pCount[ROSHAMBO_BOT_paper] > pCount[ROSHAMBO_BOT_scissors] ) { 
+      return( ROSHAMBO_BOT_scissors); 
     } else { 
-      return ( rock ); 
+      return ( ROSHAMBO_BOT_rock ); 
     }
 }
 /**********************************************************************/
@@ -4305,7 +4305,7 @@ int mixed_strategy()
   static int last_strategy;
   int i, rcount, pcount, scount;
 
-  int turn = opp_history[0];
+  int turn = ROSHAMBO_BOT_opp_history[0];
   double t;
 
   if( turn == 0 ) {
@@ -4316,11 +4316,11 @@ int mixed_strategy()
   }
   else{
     /* remeber success of prev stratigies */
-    if (my_history[turn] == opp_history[turn]){
+    if (ROSHAMBO_BOT_my_history[turn] == ROSHAMBO_BOT_opp_history[turn]){
       strategy_scores[last_strategy] += 1;  /* draw */
     }
-    else if ( (my_history[turn]-opp_history[turn] == 1) || 
-              (my_history[turn]-opp_history[turn] == -2) ) {
+    else if ( (ROSHAMBO_BOT_my_history[turn]-ROSHAMBO_BOT_opp_history[turn] == 1) || 
+              (ROSHAMBO_BOT_my_history[turn]-ROSHAMBO_BOT_opp_history[turn] == -2) ) {
       strategy_scores[last_strategy] += 3;  /* win (test from Play_Match) */
     }
     else{
@@ -4331,7 +4331,7 @@ int mixed_strategy()
 
   /* pick based on rate of success for each strategy */
   t = random();
-  t /= maxrandom;
+  t /= ROSHAMBO_BOT_maxrandom;
   t *= (strategy_scores[0] + strategy_scores[1] + strategy_scores[2] +
         strategy_scores[3]);
 
@@ -4341,16 +4341,16 @@ int mixed_strategy()
        my last move */
 
     rcount = 0;  pcount = 0;  scount = 0;
-    for (i = 2; i <= opp_history[0]-1; i++) {
-      if (my_history[i-1]==my_history[opp_history[0]]){
-        if (opp_history[i] == rock)            { rcount++; }
-        else if (opp_history[i] == paper)      { pcount++; }
-        else /* opp_history[i] == scissors */  { scount++; }
+    for (i = 2; i <= ROSHAMBO_BOT_opp_history[0]-1; i++) {
+      if (ROSHAMBO_BOT_my_history[i-1]==ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_opp_history[0]]){
+        if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_rock)            { rcount++; }
+        else if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_paper)      { pcount++; }
+        else /* ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_scissors */  { scount++; }
       }
     }
-    if ( (rcount > pcount) && (rcount > scount) ) { return(paper); }
-    else if ( pcount > scount ) { return(scissors); }
-    else { return(rock); }
+    if ( (rcount > pcount) && (rcount > scount) ) { return(ROSHAMBO_BOT_paper); }
+    else if ( pcount > scount ) { return(ROSHAMBO_BOT_scissors); }
+    else { return(ROSHAMBO_BOT_rock); }
   }
   else if (t<strategy_scores[0]+strategy_scores[1]){ /* note change */
     last_strategy = 1;
@@ -4358,16 +4358,16 @@ int mixed_strategy()
        last move */
 
     rcount = 0;  pcount = 0;  scount = 0;
-    for (i = 2; i <= opp_history[0]-1; i++) {
-      if (opp_history[i-1]==opp_history[opp_history[0]]){
-        if (opp_history[i] == rock)            { rcount++; }
-        else if (opp_history[i] == paper)      { pcount++; }
-        else /* opp_history[i] == scissors */  { scount++; }
+    for (i = 2; i <= ROSHAMBO_BOT_opp_history[0]-1; i++) {
+      if (ROSHAMBO_BOT_opp_history[i-1]==ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]]){
+        if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_rock)            { rcount++; }
+        else if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_paper)      { pcount++; }
+        else /* ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_scissors */  { scount++; }
       }
     }
-    if ( (rcount > pcount) && (rcount > scount) ) { return(paper); }
-    else if ( pcount > scount ) { return(scissors); }
-    else { return(rock); }
+    if ( (rcount > pcount) && (rcount > scount) ) { return(ROSHAMBO_BOT_paper); }
+    else if ( pcount > scount ) { return(ROSHAMBO_BOT_scissors); }
+    else { return(ROSHAMBO_BOT_rock); }
     
   }
   else if (t<strategy_scores[0]+strategy_scores[1]+strategy_scores[2]){
@@ -4375,14 +4375,14 @@ int mixed_strategy()
     /* play whatever will beat the opponent's most frequent choice */
 
     rcount = 0;  pcount = 0;  scount = 0;
-    for (i = 1; i <= opp_history[0]; i++) {
-      if (opp_history[i] == rock)            { rcount++; }
-      else if (opp_history[i] == paper)      { pcount++; }
-      else /* opp_history[i] == scissors */  { scount++; }
+    for (i = 1; i <= ROSHAMBO_BOT_opp_history[0]; i++) {
+      if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_rock)            { rcount++; }
+      else if (ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_paper)      { pcount++; }
+      else /* ROSHAMBO_BOT_opp_history[i] == ROSHAMBO_BOT_scissors */  { scount++; }
     }
-    if ( (rcount > pcount) && (rcount > scount) ) { return(paper); }
-    else if ( pcount > scount ) { return(scissors); }
-    else { return(rock); }
+    if ( (rcount > pcount) && (rcount > scount) ) { return(ROSHAMBO_BOT_paper); }
+    else if ( pcount > scount ) { return(ROSHAMBO_BOT_scissors); }
+    else { return(ROSHAMBO_BOT_rock); }
   }
   else{
     last_strategy = 3;
@@ -4394,47 +4394,47 @@ int mixed_strategy()
 
 /*  Entrant:  Multi-strategy (38)   Mark James (Can) */
 
-typedef struct RollingAverage
+typedef struct ROSHAMBO_BOT_RollingAverage
 {
   float total;
   int count;
   int size;
   int next;
   float* data;
-} RollingAverage;
+} ROSHAMBO_BOT_RollingAverage;
 
-RollingAverage* RollingAverage_new(int size);
-void RollingAverage_delete(RollingAverage* avg);
-float RollingAverage_Add(RollingAverage* avg, float element);
-float RollingAverage_Average(RollingAverage* avg);
+ROSHAMBO_BOT_RollingAverage* RollingAverage_new(int size);
+void RollingAverage_delete(ROSHAMBO_BOT_RollingAverage* avg);
+float RollingAverage_Add(ROSHAMBO_BOT_RollingAverage* avg, float element);
+float RollingAverage_Average(ROSHAMBO_BOT_RollingAverage* avg);
 
-typedef struct Strategy {
-  RollingAverage* success;
+typedef struct ROSHAMBO_BOT_Strategy {
+  ROSHAMBO_BOT_RollingAverage* success;
   int(*function)();
   int lastmove;
   int used;
-} Strategy;
+} ROSHAMBO_BOT_Strategy;
 
-extern Strategy* Strategy_new(int(*function)(), int length);
-extern void      Strategy_delete(Strategy* stgy);
-void             Strategy_Use(Strategy* stgy);
-int              Strategy_Used(Strategy* stgy);
+extern ROSHAMBO_BOT_Strategy* Strategy_new(int(*function)(), int length);
+extern void      Strategy_delete(ROSHAMBO_BOT_Strategy* stgy);
+void             Strategy_Use(ROSHAMBO_BOT_Strategy* stgy);
+int              Strategy_Used(ROSHAMBO_BOT_Strategy* stgy);
 
 extern void MD5Init();
 extern unsigned int MD5Random();
 
-#define strategy_count 7
-#define AVGLEN 50
+#define ROSHAMBO_BOT_strategy_count 7
+#define ROSHAMBO_BOT_AVGLEN 50
 
-extern int opp_history[];
-extern int my_history[];
+extern int ROSHAMBO_BOT_opp_history[];
+extern int ROSHAMBO_BOT_my_history[];
 
-Strategy** strategies = NULL;
+ROSHAMBO_BOT_Strategy** strategies = NULL;
 
 int
 FirstTrial()
 {
-  return opp_history[0] == 0;
+  return ROSHAMBO_BOT_opp_history[0] == 0;
 }
 
 static int
@@ -4451,40 +4451,40 @@ static int
 mrockbot ()
 {
   /* "Good ole rock.  Nuthin' beats rock." */
-  return(rock);
+  return(ROSHAMBO_BOT_rock);
 }
 
 static int
 mpaperbot ()
 {
-  return(paper);
+  return(ROSHAMBO_BOT_paper);
 }
 
 static int
 mscissorsbot ()
 {
-  return(scissors);
+  return(ROSHAMBO_BOT_scissors);
 }
 
 static int
 beatcopybot()
 {
-    return( (my_history[my_history[0]] + 2) % 3);
+    return( (ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]] + 2) % 3);
 }
 
 int
 beatswitchbot ()
 {
   /* assume opponent never repeats the previous pick */
-  if ( opp_history[opp_history[0]] == rock )
+  if ( ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] == ROSHAMBO_BOT_rock )
   {
-    return(scissors);
+    return(ROSHAMBO_BOT_scissors);
   }
-  else if ( opp_history[opp_history[0]] == paper )
+  else if ( ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]] == ROSHAMBO_BOT_paper )
   {
-    return( rock );
+    return( ROSHAMBO_BOT_rock );
   }
-  else return( paper );
+  else return( ROSHAMBO_BOT_paper );
 }
 
 int beatfreqbot ()
@@ -4494,18 +4494,18 @@ int beatfreqbot ()
     int i, rcount, pcount, scount;
 
     rcount = 0;  pcount = 0;  scount = 0;
-    for (i = 1; i <= my_history[0]; i++) {
-        if (my_history[i] == rock)            { rcount++; }
-        else if (my_history[i] == paper)      { pcount++; }
-        else /* my_history[i] == scissors */  { scount++; }
+    for (i = 1; i <= ROSHAMBO_BOT_my_history[0]; i++) {
+        if (ROSHAMBO_BOT_my_history[i] == ROSHAMBO_BOT_rock)            { rcount++; }
+        else if (ROSHAMBO_BOT_my_history[i] == ROSHAMBO_BOT_paper)      { pcount++; }
+        else /* ROSHAMBO_BOT_my_history[i] == ROSHAMBO_BOT_scissors */  { scount++; }
     }
-    if ( (rcount > pcount) && (rcount > scount) ) { return(scissors); }
-    else if ( pcount > scount ) { return(rock); }
-    else { return(paper); }
+    if ( (rcount > pcount) && (rcount > scount) ) { return(ROSHAMBO_BOT_scissors); }
+    else if ( pcount > scount ) { return(ROSHAMBO_BOT_rock); }
+    else { return(ROSHAMBO_BOT_paper); }
 }
 
 int
-Strategy_Move(Strategy* stgy)
+Strategy_Move(ROSHAMBO_BOT_Strategy* stgy)
 {
   int move = (stgy->function)();
   stgy->lastmove = move;
@@ -4513,13 +4513,13 @@ Strategy_Move(Strategy* stgy)
 }
 
 void
-Strategy_Use(Strategy* stgy)
+Strategy_Use(ROSHAMBO_BOT_Strategy* stgy)
 {
   stgy->used++;
 }
 
 int
-Strategy_Used(Strategy* stgy)
+Strategy_Used(ROSHAMBO_BOT_Strategy* stgy)
 {
   return stgy->used;
 }
@@ -4528,7 +4528,7 @@ float
 Score(int round, int move)
 {
   int p1 = move;
-  int p2 = opp_history[round];
+  int p2 = ROSHAMBO_BOT_opp_history[round];
 
   if (p1 == p2) {
     return 0.5f;
@@ -4552,22 +4552,22 @@ int multibot()
     /* New round */
     if(strategies)
     {
-      for( i = 0; i < strategy_count; i++)
+      for( i = 0; i < ROSHAMBO_BOT_strategy_count; i++)
       {
         Strategy_delete(strategies[i]);
       }
       free(strategies);
       strategies = NULL;
     }
-    strategies = (Strategy**) malloc(sizeof(Strategy*) * strategy_count);
+    strategies = (ROSHAMBO_BOT_Strategy**) malloc(sizeof(ROSHAMBO_BOT_Strategy*) * ROSHAMBO_BOT_strategy_count);
 
-    strategies[0] = Strategy_new(random_md5,AVGLEN);
-    strategies[1] = Strategy_new(mrockbot,AVGLEN);
-    strategies[2] = Strategy_new(mpaperbot,AVGLEN);
-    strategies[3] = Strategy_new(mscissorsbot,AVGLEN);
-    strategies[4] = Strategy_new(beatcopybot,AVGLEN);
-    strategies[5] = Strategy_new(beatswitchbot,AVGLEN);
-    strategies[6] = Strategy_new(beatfreqbot,AVGLEN);
+    strategies[0] = Strategy_new(random_md5,ROSHAMBO_BOT_AVGLEN);
+    strategies[1] = Strategy_new(mrockbot,ROSHAMBO_BOT_AVGLEN);
+    strategies[2] = Strategy_new(mpaperbot,ROSHAMBO_BOT_AVGLEN);
+    strategies[3] = Strategy_new(mscissorsbot,ROSHAMBO_BOT_AVGLEN);
+    strategies[4] = Strategy_new(beatcopybot,ROSHAMBO_BOT_AVGLEN);
+    strategies[5] = Strategy_new(beatswitchbot,ROSHAMBO_BOT_AVGLEN);
+    strategies[6] = Strategy_new(beatfreqbot,ROSHAMBO_BOT_AVGLEN);
 
     return random_md5();
   } else {
@@ -4575,10 +4575,10 @@ int multibot()
     float best = 0.0f;
     int beststrategy = 0;
     int bestmove = 0;
-    for( i = 0; i < strategy_count ; i++)
+    for( i = 0; i < ROSHAMBO_BOT_strategy_count ; i++)
     {
       float success = RollingAverage_Add(strategies[i]->success,
-                                         Score(opp_history[0], strategies[i]->lastmove));
+                                         Score(ROSHAMBO_BOT_opp_history[0], strategies[i]->lastmove));
       int move = Strategy_Move(strategies[i]);
 
       if(success > best)
@@ -4594,11 +4594,11 @@ int multibot()
   }
 }
 
-RollingAverage*
+ROSHAMBO_BOT_RollingAverage*
 RollingAverage_new(int size)
 {
   int i;
-  RollingAverage* avg = (RollingAverage*) malloc(sizeof(RollingAverage));
+  ROSHAMBO_BOT_RollingAverage* avg = (ROSHAMBO_BOT_RollingAverage*) malloc(sizeof(ROSHAMBO_BOT_RollingAverage));
   avg->total = 0.0f;
   avg->count = 0;
   avg->next = 0;
@@ -4612,14 +4612,14 @@ RollingAverage_new(int size)
 }
 
 void
-RollingAverage_delete(RollingAverage* avg)
+RollingAverage_delete(ROSHAMBO_BOT_RollingAverage* avg)
 {
   free(avg->data);
   free(avg);
 }
 
 float
-RollingAverage_Add(RollingAverage* avg, float element)
+RollingAverage_Add(ROSHAMBO_BOT_RollingAverage* avg, float element)
 {
   avg->total -= avg->data[avg->next];
   avg->data[avg->next] = element;
@@ -4634,7 +4634,7 @@ RollingAverage_Add(RollingAverage* avg, float element)
 }
 
 float
-RollingAverage_Average(RollingAverage* avg)
+RollingAverage_Average(ROSHAMBO_BOT_RollingAverage* avg)
 {
   if(avg->count == 0)
   {
@@ -4650,10 +4650,10 @@ RollingAverage_Average(RollingAverage* avg)
   }
 }
 
-Strategy*
+ROSHAMBO_BOT_Strategy*
 Strategy_new(int(*function)(), int length)
 {
-  Strategy* result = (Strategy*) malloc(sizeof(Strategy));
+  ROSHAMBO_BOT_Strategy* result = (ROSHAMBO_BOT_Strategy*) malloc(sizeof(ROSHAMBO_BOT_Strategy));
   result->success = RollingAverage_new(length);
   result->function = function;
   result->lastmove = 0;
@@ -4662,7 +4662,7 @@ Strategy_new(int(*function)(), int length)
 }
 
 void
-Strategy_delete(Strategy* stgy)
+Strategy_delete(ROSHAMBO_BOT_Strategy* stgy)
 {
   RollingAverage_delete(stgy->success);
   free(stgy);
@@ -4675,13 +4675,13 @@ Strategy_delete(Strategy* stgy)
 
 /* The four core functions */
 
-#define F1(x, y, z) (z ^ (x & (y ^ z)))
-#define F2(x, y, z) F1(z, x, y)
-#define F3(x, y, z) (x ^ y ^ z)
-#define F4(x, y, z) (y ^ (x | ~z))
+#define ROSHAMBO_BOT_F1(x, y, z) (z ^ (x & (y ^ z)))
+#define ROSHAMBO_BOT_F2(x, y, z) ROSHAMBO_BOT_F1(z, x, y)
+#define ROSHAMBO_BOT_F3(x, y, z) (x ^ y ^ z)
+#define ROSHAMBO_BOT_F4(x, y, z) (y ^ (x | ~z))
 
 /* This is the central step in the MD5 algorithm. */
-#define MD5STEP(f, w, x, y, z, data, s) ( w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x )
+#define ROSHAMBO_BOT_MD5STEP(f, w, x, y, z, data, s) ( w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x )
 
 /*
  * The core of the MD5 algorithm, this alters an existing MD5 hash to
@@ -4698,73 +4698,73 @@ static void MD5Transform(unsigned int buf[4],
   c = buf[2];
   d = buf[3];
 
-  MD5STEP(F1, a, b, c, d, in[ 0]+0xd76aa478,  7);
-  MD5STEP(F1, d, a, b, c, in[ 1]+0xe8c7b756, 12);
-  MD5STEP(F1, c, d, a, b, in[ 2]+0x242070db, 17);
-  MD5STEP(F1, b, c, d, a, in[ 3]+0xc1bdceee, 22);
-  MD5STEP(F1, a, b, c, d, in[ 4]+0xf57c0faf,  7);
-  MD5STEP(F1, d, a, b, c, in[ 5]+0x4787c62a, 12);
-  MD5STEP(F1, c, d, a, b, in[ 6]+0xa8304613, 17);
-  MD5STEP(F1, b, c, d, a, in[ 7]+0xfd469501, 22);
-  MD5STEP(F1, a, b, c, d, in[ 8]+0x698098d8,  7);
-  MD5STEP(F1, d, a, b, c, in[ 9]+0x8b44f7af, 12);
-  MD5STEP(F1, c, d, a, b, in[10]+0xffff5bb1, 17);
-  MD5STEP(F1, b, c, d, a, in[11]+0x895cd7be, 22);
-  MD5STEP(F1, a, b, c, d, in[12]+0x6b901122,  7);
-  MD5STEP(F1, d, a, b, c, in[13]+0xfd987193, 12);
-  MD5STEP(F1, c, d, a, b, in[14]+0xa679438e, 17);
-  MD5STEP(F1, b, c, d, a, in[15]+0x49b40821, 22);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, a, b, c, d, in[ 0]+0xd76aa478,  7);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, d, a, b, c, in[ 1]+0xe8c7b756, 12);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, c, d, a, b, in[ 2]+0x242070db, 17);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, b, c, d, a, in[ 3]+0xc1bdceee, 22);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, a, b, c, d, in[ 4]+0xf57c0faf,  7);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, d, a, b, c, in[ 5]+0x4787c62a, 12);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, c, d, a, b, in[ 6]+0xa8304613, 17);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, b, c, d, a, in[ 7]+0xfd469501, 22);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, a, b, c, d, in[ 8]+0x698098d8,  7);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, d, a, b, c, in[ 9]+0x8b44f7af, 12);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, c, d, a, b, in[10]+0xffff5bb1, 17);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, b, c, d, a, in[11]+0x895cd7be, 22);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, a, b, c, d, in[12]+0x6b901122,  7);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, d, a, b, c, in[13]+0xfd987193, 12);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, c, d, a, b, in[14]+0xa679438e, 17);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F1, b, c, d, a, in[15]+0x49b40821, 22);
 
-  MD5STEP(F2, a, b, c, d, in[ 1]+0xf61e2562,  5);
-  MD5STEP(F2, d, a, b, c, in[ 6]+0xc040b340,  9);
-  MD5STEP(F2, c, d, a, b, in[11]+0x265e5a51, 14);
-  MD5STEP(F2, b, c, d, a, in[ 0]+0xe9b6c7aa, 20);
-  MD5STEP(F2, a, b, c, d, in[ 5]+0xd62f105d,  5);
-  MD5STEP(F2, d, a, b, c, in[10]+0x02441453,  9);
-  MD5STEP(F2, c, d, a, b, in[15]+0xd8a1e681, 14);
-  MD5STEP(F2, b, c, d, a, in[ 4]+0xe7d3fbc8, 20);
-  MD5STEP(F2, a, b, c, d, in[ 9]+0x21e1cde6,  5);
-  MD5STEP(F2, d, a, b, c, in[14]+0xc33707d6,  9);
-  MD5STEP(F2, c, d, a, b, in[ 3]+0xf4d50d87, 14);
-  MD5STEP(F2, b, c, d, a, in[ 8]+0x455a14ed, 20);
-  MD5STEP(F2, a, b, c, d, in[13]+0xa9e3e905,  5);
-  MD5STEP(F2, d, a, b, c, in[ 2]+0xfcefa3f8,  9);
-  MD5STEP(F2, c, d, a, b, in[ 7]+0x676f02d9, 14);
-  MD5STEP(F2, b, c, d, a, in[12]+0x8d2a4c8a, 20);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, a, b, c, d, in[ 1]+0xf61e2562,  5);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, d, a, b, c, in[ 6]+0xc040b340,  9);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, c, d, a, b, in[11]+0x265e5a51, 14);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, b, c, d, a, in[ 0]+0xe9b6c7aa, 20);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, a, b, c, d, in[ 5]+0xd62f105d,  5);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, d, a, b, c, in[10]+0x02441453,  9);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, c, d, a, b, in[15]+0xd8a1e681, 14);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, b, c, d, a, in[ 4]+0xe7d3fbc8, 20);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, a, b, c, d, in[ 9]+0x21e1cde6,  5);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, d, a, b, c, in[14]+0xc33707d6,  9);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, c, d, a, b, in[ 3]+0xf4d50d87, 14);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, b, c, d, a, in[ 8]+0x455a14ed, 20);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, a, b, c, d, in[13]+0xa9e3e905,  5);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, d, a, b, c, in[ 2]+0xfcefa3f8,  9);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, c, d, a, b, in[ 7]+0x676f02d9, 14);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F2, b, c, d, a, in[12]+0x8d2a4c8a, 20);
 
-  MD5STEP(F3, a, b, c, d, in[ 5]+0xfffa3942,  4);
-  MD5STEP(F3, d, a, b, c, in[ 8]+0x8771f681, 11);
-  MD5STEP(F3, c, d, a, b, in[11]+0x6d9d6122, 16);
-  MD5STEP(F3, b, c, d, a, in[14]+0xfde5380c, 23);
-  MD5STEP(F3, a, b, c, d, in[ 1]+0xa4beea44,  4);
-  MD5STEP(F3, d, a, b, c, in[ 4]+0x4bdecfa9, 11);
-  MD5STEP(F3, c, d, a, b, in[ 7]+0xf6bb4b60, 16);
-  MD5STEP(F3, b, c, d, a, in[10]+0xbebfbc70, 23);
-  MD5STEP(F3, a, b, c, d, in[13]+0x289b7ec6,  4);
-  MD5STEP(F3, d, a, b, c, in[ 0]+0xeaa127fa, 11);
-  MD5STEP(F3, c, d, a, b, in[ 3]+0xd4ef3085, 16);
-  MD5STEP(F3, b, c, d, a, in[ 6]+0x04881d05, 23);
-  MD5STEP(F3, a, b, c, d, in[ 9]+0xd9d4d039,  4);
-  MD5STEP(F3, d, a, b, c, in[12]+0xe6db99e5, 11);
-  MD5STEP(F3, c, d, a, b, in[15]+0x1fa27cf8, 16);
-  MD5STEP(F3, b, c, d, a, in[ 2]+0xc4ac5665, 23);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, a, b, c, d, in[ 5]+0xfffa3942,  4);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, d, a, b, c, in[ 8]+0x8771f681, 11);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, c, d, a, b, in[11]+0x6d9d6122, 16);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, b, c, d, a, in[14]+0xfde5380c, 23);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, a, b, c, d, in[ 1]+0xa4beea44,  4);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, d, a, b, c, in[ 4]+0x4bdecfa9, 11);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, c, d, a, b, in[ 7]+0xf6bb4b60, 16);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, b, c, d, a, in[10]+0xbebfbc70, 23);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, a, b, c, d, in[13]+0x289b7ec6,  4);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, d, a, b, c, in[ 0]+0xeaa127fa, 11);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, c, d, a, b, in[ 3]+0xd4ef3085, 16);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, b, c, d, a, in[ 6]+0x04881d05, 23);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, a, b, c, d, in[ 9]+0xd9d4d039,  4);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, d, a, b, c, in[12]+0xe6db99e5, 11);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, c, d, a, b, in[15]+0x1fa27cf8, 16);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F3, b, c, d, a, in[ 2]+0xc4ac5665, 23);
 
-  MD5STEP(F4, a, b, c, d, in[ 0]+0xf4292244,  6);
-  MD5STEP(F4, d, a, b, c, in[ 7]+0x432aff97, 10);
-  MD5STEP(F4, c, d, a, b, in[14]+0xab9423a7, 15);
-  MD5STEP(F4, b, c, d, a, in[ 5]+0xfc93a039, 21);
-  MD5STEP(F4, a, b, c, d, in[12]+0x655b59c3,  6);
-  MD5STEP(F4, d, a, b, c, in[ 3]+0x8f0ccc92, 10);
-  MD5STEP(F4, c, d, a, b, in[10]+0xffeff47d, 15);
-  MD5STEP(F4, b, c, d, a, in[ 1]+0x85845dd1, 21);
-  MD5STEP(F4, a, b, c, d, in[ 8]+0x6fa87e4f,  6);
-  MD5STEP(F4, d, a, b, c, in[15]+0xfe2ce6e0, 10);
-  MD5STEP(F4, c, d, a, b, in[ 6]+0xa3014314, 15);
-  MD5STEP(F4, b, c, d, a, in[13]+0x4e0811a1, 21);
-  MD5STEP(F4, a, b, c, d, in[ 4]+0xf7537e82,  6);
-  MD5STEP(F4, d, a, b, c, in[11]+0xbd3af235, 10);
-  MD5STEP(F4, c, d, a, b, in[ 2]+0x2ad7d2bb, 15);
-  MD5STEP(F4, b, c, d, a, in[ 9]+0xeb86d391, 21);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, a, b, c, d, in[ 0]+0xf4292244,  6);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, d, a, b, c, in[ 7]+0x432aff97, 10);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, c, d, a, b, in[14]+0xab9423a7, 15);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, b, c, d, a, in[ 5]+0xfc93a039, 21);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, a, b, c, d, in[12]+0x655b59c3,  6);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, d, a, b, c, in[ 3]+0x8f0ccc92, 10);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, c, d, a, b, in[10]+0xffeff47d, 15);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, b, c, d, a, in[ 1]+0x85845dd1, 21);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, a, b, c, d, in[ 8]+0x6fa87e4f,  6);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, d, a, b, c, in[15]+0xfe2ce6e0, 10);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, c, d, a, b, in[ 6]+0xa3014314, 15);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, b, c, d, a, in[13]+0x4e0811a1, 21);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, a, b, c, d, in[ 4]+0xf7537e82,  6);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, d, a, b, c, in[11]+0xbd3af235, 10);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, c, d, a, b, in[ 2]+0x2ad7d2bb, 15);
+  ROSHAMBO_BOT_MD5STEP(ROSHAMBO_BOT_F4, b, c, d, a, in[ 9]+0xeb86d391, 21);
 
   buf[0] += a;
   buf[1] += b;
@@ -4772,17 +4772,17 @@ static void MD5Transform(unsigned int buf[4],
   buf[3] += d;
 }
 
-#undef F1
-#undef F2
-#undef F3
-#undef F4
-#undef MD5STEP
+#undef ROSHAMBO_BOT_F1
+#undef ROSHAMBO_BOT_F2
+#undef ROSHAMBO_BOT_F3
+#undef ROSHAMBO_BOT_F4
+#undef ROSHAMBO_BOT_MD5STEP
 
 
-unsigned int MD5Buf[4];
-unsigned int MD5In[16];
+unsigned int ROSHAMBO_BOT_MD5Buf[4];
+unsigned int ROSHAMBO_BOT_MD5In[16];
 
-int MD5BufInit [] =
+int ROSHAMBO_BOT_MD5BufInit [] =
 {
   0x67452301,
   0xefcdab89,
@@ -4796,12 +4796,12 @@ MD5Init()
   int i;
   for(i = 0; i < 4; i++)
   {
-    MD5Buf[i] = MD5BufInit[i];
+    ROSHAMBO_BOT_MD5Buf[i] = ROSHAMBO_BOT_MD5BufInit[i];
   }
 
   for(i = 0; i < 16; i++)
   {
-    MD5In[i] = MD5Buf[i % 4] + MD5Buf[i / 4];
+    ROSHAMBO_BOT_MD5In[i] = ROSHAMBO_BOT_MD5Buf[i % 4] + ROSHAMBO_BOT_MD5Buf[i / 4];
   }
 }
 
@@ -4809,13 +4809,13 @@ unsigned int
 MD5Random()
 {
   int i;
-  MD5Transform ( MD5Buf, MD5In );
+  MD5Transform ( ROSHAMBO_BOT_MD5Buf, ROSHAMBO_BOT_MD5In );
   for(i = 0; i < 16; i++)
   {
-    MD5In[i] = MD5Buf[i % 4] + MD5Buf[i / 4];
+    ROSHAMBO_BOT_MD5In[i] = ROSHAMBO_BOT_MD5Buf[i % 4] + ROSHAMBO_BOT_MD5Buf[i / 4];
   }
 
-  return MD5Buf[0];
+  return ROSHAMBO_BOT_MD5Buf[0];
 }
 
 int asterious()  /* Kastellanos Nikos (36 lines) */
@@ -4834,19 +4834,19 @@ int asterious()  /* Kastellanos Nikos (36 lines) */
  res=random()%3;
 
  /*  Handle base and weirdo */
- trial=my_history[0];
- if(trial>0  &&  my_history[trial]==rock      &&  opp_history[trial]==paper)
+ trial=ROSHAMBO_BOT_my_history[0];
+ if(trial>0  &&  ROSHAMBO_BOT_my_history[trial]==ROSHAMBO_BOT_rock      &&  ROSHAMBO_BOT_opp_history[trial]==ROSHAMBO_BOT_paper)
    base+=2;
- if(trial>0  &&  my_history[trial]==paper     &&
-    opp_history[trial]==scissors) base+=2;
- if(trial>0  &&  my_history[trial]==scissors  &&  opp_history[trial]==rock)
+ if(trial>0  &&  ROSHAMBO_BOT_my_history[trial]==ROSHAMBO_BOT_paper     &&
+    ROSHAMBO_BOT_opp_history[trial]==ROSHAMBO_BOT_scissors) base+=2;
+ if(trial>0  &&  ROSHAMBO_BOT_my_history[trial]==ROSHAMBO_BOT_scissors  &&  ROSHAMBO_BOT_opp_history[trial]==ROSHAMBO_BOT_rock)
    base+=2;
- if(trial>0  &&  my_history[trial]==opp_history[trial])     base+=1;
+ if(trial>0  &&  ROSHAMBO_BOT_my_history[trial]==ROSHAMBO_BOT_opp_history[trial])     base+=1;
  if(base<0) base=0;
  if(base>9) {base=0;weirdo=(weirdo+1%3);} /*  6,9,12,15 are good BASE numbers. */
 
  /*  do the AI stuff... */
- if(trial>0) res=opp_history[trial];
+ if(trial>0) res=ROSHAMBO_BOT_opp_history[trial];
 
  /*  Schisophrenic Behavior. */
  res=res+weirdo;
@@ -4866,50 +4866,50 @@ int peterbot()
     int opp_last, opp_prev, my_last, my_prev, myfreq, i;
 
     opp_prev = 0; my_prev = 0; /* -db */
-    if( opp_history[0] == 0 ) {
+    if( ROSHAMBO_BOT_opp_history[0] == 0 ) {
         oc.r = 0;  oc.p = 0;  oc.s = 0;  
         opp_last = random()%3;
         opp_prev = random()%3;
     }
     else {
-      opp_last = opp_history[opp_history[0]];
-      if (opp_history[0]!=1) opp_prev = opp_history[opp_history[0]-1];
-      if ( opp_last == rock)          { oc.r++; }
-      else if ( opp_last == paper)    { oc.p++; }
+      opp_last = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]];
+      if (ROSHAMBO_BOT_opp_history[0]!=1) opp_prev = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0]-1];
+      if ( opp_last == ROSHAMBO_BOT_rock)          { oc.r++; }
+      else if ( opp_last == ROSHAMBO_BOT_paper)    { oc.p++; }
       else                            { oc.s++; }
     }
 
-    if( my_history[0] == 0 ) {
+    if( ROSHAMBO_BOT_my_history[0] == 0 ) {
         mc.r = 0;  mc.p = 0;  mc.s = 0;  
         my_last = random()%3;
         my_prev = random()%3;
     }
     else {
-      my_last = my_history[my_history[0]];
-      if (my_history[0]!=1) my_prev = my_history[my_history[0]-1];
-      if ( my_last == rock)          { mc.r++; }
-      else if ( my_last == paper)    { mc.p++; }
+      my_last = ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]];
+      if (ROSHAMBO_BOT_my_history[0]!=1) my_prev = ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0]-1];
+      if ( my_last == ROSHAMBO_BOT_rock)          { mc.r++; }
+      else if ( my_last == ROSHAMBO_BOT_paper)    { mc.p++; }
       else                           { mc.s++; }
     }
 
 /* beat stupid */
-    if ( (oc.r - oc.p - oc.s) > 0 ) { return(paper); }
-    else if ( (oc.p - oc.r - oc.s) > 0 ) { return(scissors); }
-    else if ( (oc.s - oc.p - oc.r) > 0) { return(rock); }
+    if ( (oc.r - oc.p - oc.s) > 0 ) { return(ROSHAMBO_BOT_paper); }
+    else if ( (oc.p - oc.r - oc.s) > 0 ) { return(ROSHAMBO_BOT_scissors); }
+    else if ( (oc.s - oc.p - oc.r) > 0) { return(ROSHAMBO_BOT_rock); }
   
 /* beat rotate */
-    i = opp_history[0]-50;
+    i = ROSHAMBO_BOT_opp_history[0]-50;
     if (i<0) i=1;
-    while ((i<opp_history[0]) && ((opp_history[i]+1)%3==opp_history[i+1]))
+    while ((i<ROSHAMBO_BOT_opp_history[0]) && ((ROSHAMBO_BOT_opp_history[i]+1)%3==ROSHAMBO_BOT_opp_history[i+1]))
            i++;
-    if (i==opp_history[0]) {
-       return ((opp_history[i]+2)%3); 
+    if (i==ROSHAMBO_BOT_opp_history[0]) {
+       return ((ROSHAMBO_BOT_opp_history[i]+2)%3); 
 };
 
 /* beat freq */
-if ( (mc.r > mc.p) && (mc.r > mc.s) ) myfreq = paper;
-   else if ( mc.p > mc.s ) myfreq = scissors;
-        else myfreq = rock;
+if ( (mc.r > mc.p) && (mc.r > mc.s) ) myfreq = ROSHAMBO_BOT_paper;
+   else if ( mc.p > mc.s ) myfreq = ROSHAMBO_BOT_scissors;
+        else myfreq = ROSHAMBO_BOT_rock;
 if (myfreq == opp_last && myfreq == opp_prev) { 
    return (opp_last+1)%3;
 };
@@ -4978,21 +4978,21 @@ int inocencio ()  /* based on freqbot2 code */
     int i, j, b, pi, x;
 
     pi = 0; /* -db */
-    n = opp_history[0];
+    n = ROSHAMBO_BOT_opp_history[0];
 
     if ( n == 0 ) {
       rcount = 0;  pcount = 0;  scount = 0;
     } else {
-      opp_last = opp_history[n];
-      if ( opp_last == rock)          { rcount++; }
-      else if ( opp_last == paper)    { pcount++; }
-      else /* opp_last == scissors */ { scount++; }
+      opp_last = ROSHAMBO_BOT_opp_history[n];
+      if ( opp_last == ROSHAMBO_BOT_rock)          { rcount++; }
+      else if ( opp_last == ROSHAMBO_BOT_paper)    { pcount++; }
+      else /* opp_last == ROSHAMBO_BOT_scissors */ { scount++; }
       
       if (n > 20) {
-        opp_fgt = opp_history[n - 20];
-        if ( opp_fgt == rock)          { rcount--; }
-        else if ( opp_fgt == paper)    { pcount--; }
-        else /* opp_fgt == scissors */ { scount--; }
+        opp_fgt = ROSHAMBO_BOT_opp_history[n - 20];
+        if ( opp_fgt == ROSHAMBO_BOT_rock)          { rcount--; }
+        else if ( opp_fgt == ROSHAMBO_BOT_paper)    { pcount--; }
+        else /* opp_fgt == ROSHAMBO_BOT_scissors */ { scount--; }
       }
     }
     total = rcount+pcount+scount;
@@ -5006,11 +5006,11 @@ int inocencio ()  /* based on freqbot2 code */
     } 
 
     if (rstat > 0.45) { 
-      return(paper); 
+      return(ROSHAMBO_BOT_paper); 
     } else if ( pstat > 0.45) { 
-      return(scissors);
+      return(ROSHAMBO_BOT_scissors);
     } else if ( sstat > 0.45) {
-      return(rock);
+      return(ROSHAMBO_BOT_rock);
     } 
         
     for (i = 0; i < 27; i++) {
@@ -5023,12 +5023,12 @@ int inocencio ()  /* based on freqbot2 code */
       pi = 0;
       b = 1;
       for (j = 0; j < 3; j++) {
-        x = opp_history[i+j];
+        x = ROSHAMBO_BOT_opp_history[i+j];
         pi += b*x;
         b *= 3;
       }
       if (i < n-2) {
-        pat[pi][opp_history[i+3]] += 1;
+        pat[pi][ROSHAMBO_BOT_opp_history[i+3]] += 1;
         patCount[pi]++;
       }
     }
@@ -5041,12 +5041,12 @@ int inocencio ()  /* based on freqbot2 code */
       
     for (j = 0; j < 3; j++)
       if (pat[pi][j] > 0.45) {
-        if (j == rock)
-          return paper;
-        else if (j == paper)
-          return scissors;
+        if (j == ROSHAMBO_BOT_rock)
+          return ROSHAMBO_BOT_paper;
+        else if (j == ROSHAMBO_BOT_paper)
+          return ROSHAMBO_BOT_scissors;
         else
-          return rock;
+          return ROSHAMBO_BOT_rock;
       }
 
 
@@ -5060,12 +5060,12 @@ int inocencio ()  /* based on freqbot2 code */
       pi = 0;
       b = 1;
       for (j = 0; j < 3; j++) {
-        x = my_history[i+j];
+        x = ROSHAMBO_BOT_my_history[i+j];
         pi += b*x;
         b *= 3;
       }
       if (i < n-2) {
-        mypat[pi][opp_history[i+3]] += 1;
+        mypat[pi][ROSHAMBO_BOT_opp_history[i+3]] += 1;
         mypatCount[pi]++;
       }
     }
@@ -5078,17 +5078,17 @@ int inocencio ()  /* based on freqbot2 code */
       
     for (j = 0; j < 3; j++)
       if (mypat[pi][j] > 0.45) {
-        if (j == rock)
-          return paper;
-        else if (j == paper)
-          return scissors;
+        if (j == ROSHAMBO_BOT_rock)
+          return ROSHAMBO_BOT_paper;
+        else if (j == ROSHAMBO_BOT_paper)
+          return ROSHAMBO_BOT_scissors;
         else
-          return rock;
+          return ROSHAMBO_BOT_rock;
       }
 
-    rstat += (probs[rock] + my_probs[rock])/3.0;
-    pstat += (probs[paper] + my_probs[paper])/3.0;
-    sstat += (probs[scissors] + my_probs[scissors])/3.0;
+    rstat += (probs[ROSHAMBO_BOT_rock] + my_probs[ROSHAMBO_BOT_rock])/3.0;
+    pstat += (probs[ROSHAMBO_BOT_paper] + my_probs[ROSHAMBO_BOT_paper])/3.0;
+    sstat += (probs[ROSHAMBO_BOT_scissors] + my_probs[ROSHAMBO_BOT_scissors])/3.0;
 
     return(biased_roshambo(sstat,rstat));
 }
@@ -5126,28 +5126,28 @@ int inocencio ()  /* based on freqbot2 code */
 /* Uncomment to have the bots track information between 
 ** tournaments
 
-#define sunPERSISTANT
+#define ROSHAMBO_BOT_sunPERSISTANT
 */
 
 /* ----------------------------------------- Sunir's Utilities */
 
-#define sunMYPREVTURN(x) (my_history[my_history[0] - (x) + 1])
-#define sunOPPPREVTURN(x) (opp_history[opp_history[0] - (x) + 1])
+#define ROSHAMBO_BOT_sunMYPREVTURN(x) (ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_my_history[0] - (x) + 1])
+#define ROSHAMBO_BOT_sunOPPPREVTURN(x) (ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_opp_history[0] - (x) + 1])
 
-#define sunMYLASTTURN sunMYPREVTURN(1)
-#define sunOPPLASTTURN sunOPPPREVTURN(1)
+#define ROSHAMBO_BOT_sunMYLASTTURN ROSHAMBO_BOT_sunMYPREVTURN(1)
+#define ROSHAMBO_BOT_sunOPPLASTTURN ROSHAMBO_BOT_sunOPPPREVTURN(1)
 
-#define sunNUMELEM(x) (sizeof (x) / sizeof *(x))
+#define ROSHAMBO_BOT_sunNUMELEM(x) (sizeof (x) / sizeof *(x))
 
-#define sunPI 3.141592654
+#define ROSHAMBO_BOT_sunPI 3.141592654
 
 /* Returns -1 on a loss, 0 on a tie, 1 on a win */
 int sunRoshamboComparison( int me, int opp )
 {
     static int aiCompareTable[] = {
-        paper, /* rock */
-        scissors, /* paper */
-        rock, /* scissors */
+        ROSHAMBO_BOT_paper, /* rock */
+        ROSHAMBO_BOT_scissors, /* paper */
+        ROSHAMBO_BOT_rock, /* scissors */
     };
 
     if( me == opp )
@@ -5159,17 +5159,17 @@ int sunRoshamboComparison( int me, int opp )
 typedef struct 
 {
     int iCurrentPlayer;
-} sunPLAYERTRACKER;
+} ROSHAMBO_BOT_sunPLAYERTRACKER;
 
 /* Keeps track of which player I'm playing against */
-int sunTrackPlayer( sunPLAYERTRACKER *pTracker  )
+int sunTrackPlayer( ROSHAMBO_BOT_sunPLAYERTRACKER *pTracker  )
 {
     if( !pTracker )
         return 0;
 
-    if( !my_history[0] )
+    if( !ROSHAMBO_BOT_my_history[0] )
     {
-        pTracker->iCurrentPlayer = (pTracker->iCurrentPlayer + 1) % players;
+        pTracker->iCurrentPlayer = (pTracker->iCurrentPlayer + 1) % ROSHAMBO_BOT_players;
     }
 
     return pTracker->iCurrentPlayer;
@@ -5183,10 +5183,10 @@ typedef struct
     int iLastTurn;
     int aiTransform[3];
     double dShuffleProbability;
-} sunCRAZYBOT;
+} ROSHAMBO_BOT_sunCRAZYBOT;
 
 /* Sets the transform table to a new random ordered set */
-void sunShuffleCrazybotPlayer( sunCRAZYBOT *pPlayer )
+void sunShuffleCrazybotPlayer( ROSHAMBO_BOT_sunCRAZYBOT *pPlayer )
 {       
     int i = 3;
     while( i-- )
@@ -5195,7 +5195,7 @@ void sunShuffleCrazybotPlayer( sunCRAZYBOT *pPlayer )
     pPlayer->dShuffleProbability = 0.0;
 }
 
-void sunInitializeCrazybotPlayer( sunCRAZYBOT *pPlayer )
+void sunInitializeCrazybotPlayer( ROSHAMBO_BOT_sunCRAZYBOT *pPlayer )
 {
     pPlayer->bInitialized = 1;
     sunShuffleCrazybotPlayer( pPlayer );
@@ -5206,15 +5206,15 @@ void sunInitializeCrazybotPlayer( sunCRAZYBOT *pPlayer )
 */
 int sunCrazybot()
 {
-#if defined(sunPERSISTANT)
-    static sunCRAZYBOT aPlayers[players]; /* = {0}; */
+#if defined(ROSHAMBO_BOT_sunPERSISTANT)
+    static ROSHAMBO_BOT_sunCRAZYBOT aPlayers[ROSHAMBO_BOT_players]; /* = {0}; */
 
     /* Created to get rid of GCC warning for above commented code */
     static int bPlayerArrayZeroed = 0;
 
-    static sunPLAYERTRACKER Tracker = {0};
+    static ROSHAMBO_BOT_sunPLAYERTRACKER Tracker = {0};
 
-    sunCRAZYBOT *pPlayer = &aPlayers[sunTrackPlayer(&Tracker)];
+    ROSHAMBO_BOT_sunCRAZYBOT *pPlayer = &aPlayers[sunTrackPlayer(&Tracker)];
 
     if( !bPlayerArrayZeroed )
     {
@@ -5222,20 +5222,20 @@ int sunCrazybot()
         memset( aPlayers, 0, sizeof aPlayers );
     }
 #else
-    static sunCRAZYBOT Player;
-    sunCRAZYBOT *pPlayer = &Player;
+    static ROSHAMBO_BOT_sunCRAZYBOT Player;
+    ROSHAMBO_BOT_sunCRAZYBOT *pPlayer = &Player;
 
     /* Reset the player data if we're on a new player */
-    if( !my_history[0] )
+    if( !ROSHAMBO_BOT_my_history[0] )
         pPlayer->bInitialized = 0;
 #endif
 
     if( !pPlayer->bInitialized )
         sunInitializeCrazybotPlayer( pPlayer );
 
-    if( my_history[0] )
+    if( ROSHAMBO_BOT_my_history[0] )
     {
-        int iResult = sunRoshamboComparison( sunMYLASTTURN, sunOPPLASTTURN );
+        int iResult = sunRoshamboComparison( ROSHAMBO_BOT_sunMYLASTTURN, ROSHAMBO_BOT_sunOPPLASTTURN );
 
         if( iResult < 0 )
             pPlayer->dShuffleProbability += 0.1;
@@ -5260,13 +5260,13 @@ typedef struct
     ** [ways of arranging my next turn]
     */
     double adProbabilities[3][3][3];    
-} sunNERVEBOT;
+} ROSHAMBO_BOT_sunNERVEBOT;
 
 /* Sets the player's matrix to initially random probabilities,
 ** taking care to ensure the probabilities sum to 1.0 for each
 ** input vector.
 */
-void sunInitializeNervebotPlayer( sunNERVEBOT *pPlayer )
+void sunInitializeNervebotPlayer( ROSHAMBO_BOT_sunNERVEBOT *pPlayer )
 {       
     int i, j;
 
@@ -5276,10 +5276,10 @@ void sunInitializeNervebotPlayer( sunNERVEBOT *pPlayer )
         for( j = 3; j--; )
         {
             pPlayer->adProbabilities[i][j][0] = 
-                (double)random() / (double)maxrandom;
+                (double)random() / (double)ROSHAMBO_BOT_maxrandom;
 
             pPlayer->adProbabilities[i][j][1] =
-                ((double)random() / (double)maxrandom)
+                ((double)random() / (double)ROSHAMBO_BOT_maxrandom)
                     * (1.0 - pPlayer->adProbabilities[i][j][0]);
 
             pPlayer->adProbabilities[i][j][2] =
@@ -5314,7 +5314,7 @@ double sunNerveAttenuateWin( double dValue )
 int sunNervebot()
 {
     /* Attenuate from last turn */
-    int iResult = sunRoshamboComparison(sunMYLASTTURN, sunOPPLASTTURN);
+    int iResult = sunRoshamboComparison(ROSHAMBO_BOT_sunMYLASTTURN, ROSHAMBO_BOT_sunOPPLASTTURN);
 
     static double (*apfnAttenuations[])( double dValue) = {
         sunNerveAttenuateLoss,
@@ -5326,15 +5326,15 @@ int sunNervebot()
     int iNextProbability, iOtherProbability;
     double dNextProbability, dOtherProbability;
 
-#if defined(sunPERSISTANT)      
-    static sunNERVEBOT aPlayers[players]; /* = {0}; */
+#if defined(ROSHAMBO_BOT_sunPERSISTANT)      
+    static ROSHAMBO_BOT_sunNERVEBOT aPlayers[ROSHAMBO_BOT_players]; /* = {0}; */
 
     /* Created to get rid of GCC warning for above commented code */
     static int bPlayerArrayZeroed = 0;  
 
-    static sunPLAYERTRACKER Tracker = {0};
+    static ROSHAMBO_BOT_sunPLAYERTRACKER Tracker = {0};
 
-    sunNERVEBOT *pPlayer = &aPlayers[sunTrackPlayer(&Tracker)];
+    ROSHAMBO_BOT_sunNERVEBOT *pPlayer = &aPlayers[sunTrackPlayer(&Tracker)];
 
     if( !bPlayerArrayZeroed )
     {
@@ -5342,11 +5342,11 @@ int sunNervebot()
         memset( aPlayers, 0, sizeof aPlayers );
     }
 #else
-    static sunNERVEBOT Player;
-    sunNERVEBOT *pPlayer = &Player;
+    static ROSHAMBO_BOT_sunNERVEBOT Player;
+    ROSHAMBO_BOT_sunNERVEBOT *pPlayer = &Player;
 
     /* Reset the player data if we're on a new player */
-    if( !my_history[0] )
+    if( !ROSHAMBO_BOT_my_history[0] )
         pPlayer->bInitialized = 0;
 #endif
 
@@ -5354,57 +5354,57 @@ int sunNervebot()
         sunInitializeNervebotPlayer( pPlayer );
 
     /* First turn */
-    if( !my_history[0] )
+    if( !ROSHAMBO_BOT_my_history[0] )
         return biased_roshambo(1.0/3,1.0/3);
 
     /* Reward/punish based on last turn's vector and result */
-    dDelta = pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][sunMYLASTTURN];
+    dDelta = pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][ROSHAMBO_BOT_sunMYLASTTURN];
 
-    pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][sunMYLASTTURN]
+    pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][ROSHAMBO_BOT_sunMYLASTTURN]
         = apfnAttenuations[iResult+1](dDelta);
 
-    dDelta -= pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][sunMYLASTTURN];
+    dDelta -= pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][ROSHAMBO_BOT_sunMYLASTTURN];
 
     /* Propogate the delta throughout the remaining probabilities */
-    iNextProbability = (sunMYLASTTURN + 1) % 3;
+    iNextProbability = (ROSHAMBO_BOT_sunMYLASTTURN + 1) % 3;
     iOtherProbability = (iNextProbability + 1) % 3;
 
-    dNextProbability = pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][iNextProbability];
-    dOtherProbability = pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][iOtherProbability];
+    dNextProbability = pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][iNextProbability];
+    dOtherProbability = pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][iOtherProbability];
 
     /* Distributes the delta weighted to the magnitude of the
     ** two other choices' respective probabilities
     */
     dDelta = dDelta * dNextProbability / (dNextProbability + dOtherProbability);
 
-    pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][iNextProbability]
+    pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][iNextProbability]
         += dDelta;
 
-    pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][iOtherProbability] =
+    pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][iOtherProbability] =
         1.0 
-        - pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][iNextProbability]
-        - pPlayer->adProbabilities[sunMYPREVTURN(2)][sunOPPPREVTURN(2)][sunMYLASTTURN];
+        - pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][iNextProbability]
+        - pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYPREVTURN(2)][ROSHAMBO_BOT_sunOPPPREVTURN(2)][ROSHAMBO_BOT_sunMYLASTTURN];
 
     /* React to new vector */
     return biased_roshambo( 
-        pPlayer->adProbabilities[sunMYLASTTURN][sunOPPLASTTURN][rock],
-        pPlayer->adProbabilities[sunMYLASTTURN][sunOPPLASTTURN][paper] );
+        pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYLASTTURN][ROSHAMBO_BOT_sunOPPLASTTURN][ROSHAMBO_BOT_rock],
+        pPlayer->adProbabilities[ROSHAMBO_BOT_sunMYLASTTURN][ROSHAMBO_BOT_sunOPPLASTTURN][ROSHAMBO_BOT_paper] );
 }
 
 /* ------------------------------------------- Sunir's #undefs */
 
-#undef sunMYLASTTURN
-#undef sunOPPLASTTURN 
+#undef ROSHAMBO_BOT_sunMYLASTTURN
+#undef ROSHAMBO_BOT_sunOPPLASTTURN 
 
-#undef sunMYPREVTURN
-#undef sunOPPPREVTURN 
+#undef ROSHAMBO_BOT_sunMYPREVTURN
+#undef ROSHAMBO_BOT_sunOPPPREVTURN 
 
-#undef sunNUMELEM
+#undef ROSHAMBO_BOT_sunNUMELEM
 
-#undef sunPI
+#undef ROSHAMBO_BOT_sunPI
 
-#if defined(sunPERSISTANT)
-#undef sunPERSISTANT
+#if defined(ROSHAMBO_BOT_sunPERSISTANT)
+#undef ROSHAMBO_BOT_sunPERSISTANT
 #endif
 
 /**********************************************************************/
@@ -5484,14 +5484,14 @@ int RST_ULTIMATE_ANALYZER_FUNCTION() THEFUNCTIONSTARTS
     int (*callback) () = spaghetti;
 
     (*&cancer) = (scorpio = (libra = (int)NULL));
-        *turn = opp_history[0];
+        *turn = ROSHAMBO_BOT_opp_history[0];
 
-        if (*turn < trials - 2) return libra ? callback() : be_good_for GOD sake;
+        if (*turn < ROSHAMBO_BOT_trials - 2) return libra ? callback() : be_good_for GOD sake;
 
     /* Consult appropriate astrological signs in order to determine exactly */
     /* which hand to throw. */
-    good_hand = (int *)find_goodkarma(my_history);
-    bad_hand = (int *)find_goodkarma(opp_history);
+    good_hand = (int *)find_goodkarma(ROSHAMBO_BOT_my_history);
+    bad_hand = (int *)find_goodkarma(ROSHAMBO_BOT_opp_history);
 
     if( cancer == 1 ) return *(int *)"ROCK";
     if( scorpio == 1 ) return *(int *)"SCISSORS";
@@ -5560,65 +5560,65 @@ int RST_ULTIMATE_ANALYZER_FUNCTION() THEFUNCTIONSTARTS
  http://www.mathpuzzle.com/greenberg.c
 */
 
-#define T opp_history[0]
+#define ROSHAMBO_BOT_T ROSHAMBO_BOT_opp_history[0]
 
-const int best_without[3] = { 2, 0, 1 };
-const int wins_with[3] = { 1, 2, 0 };
-const int score_table[3][3] = { { 0, -1, 1 }, { 1, 0, -1 }, { -1, 1, 0 } };
+const int ROSHAMBO_BOT_best_without[3] = { 2, 0, 1 };
+const int ROSHAMBO_BOT_wins_with[3] = { 1, 2, 0 };
+const int ROSHAMBO_BOT_score_table[3][3] = { { 0, -1, 1 }, { 1, 0, -1 }, { -1, 1, 0 } };
 
-short int my_history_hash[4][trials];
-short int opp_history_hash[4][trials];
+short int ROSHAMBO_BOT_my_history_hash[4][ROSHAMBO_BOT_trials];
+short int ROSHAMBO_BOT_opp_history_hash[4][ROSHAMBO_BOT_trials];
 
-int p_full[24][4];
-int p_freq[2][2];
-int p_random;
+int ROSHAMBO_BOT_p_full[24][4];
+int ROSHAMBO_BOT_p_freq[2][2];
+int ROSHAMBO_BOT_p_random;
 
-int gear[24][trials];
+int ROSHAMBO_BOT_gear[24][ROSHAMBO_BOT_trials];
 
-int r_full[24][2];
-int r_freq[2][2];
+int ROSHAMBO_BOT_r_full[24][2];
+int ROSHAMBO_BOT_r_freq[2][2];
 
-int p_full_score[50][24][4][3];
-int p_freq_score[50][2][2][3];
-int p_random_score;
-int r_full_score[50][24][2][3];
-int r_freq_score[50][2][2][3];
+int ROSHAMBO_BOT_p_full_score[50][24][4][3];
+int ROSHAMBO_BOT_p_freq_score[50][2][2][3];
+int ROSHAMBO_BOT_p_random_score;
+int ROSHAMBO_BOT_r_full_score[50][24][2][3];
+int ROSHAMBO_BOT_r_freq_score[50][2][2][3];
 
-const int lengths[6] = { 10, 20, 30, 40, 49, 0 };
-int p_len[6];
-int s_len[6];
+const int ROSHAMBO_BOT_lengths[6] = { 10, 20, 30, 40, 49, 0 };
+int ROSHAMBO_BOT_p_len[6];
+int ROSHAMBO_BOT_s_len[6];
 
 int find_best_prediction(int len)
 {
 	int i,j,k;
-	int bs = -trials, bp = 0;
+	int bs = -ROSHAMBO_BOT_trials, bp = 0;
 
-	if (p_random_score > bs) { bs = p_random_score; bp = p_random; }
+	if (ROSHAMBO_BOT_p_random_score > bs) { bs = ROSHAMBO_BOT_p_random_score; bp = ROSHAMBO_BOT_p_random; }
 
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 24; j++) {
 			for (k = 0; k < 4; k++) {
-				if (p_full_score[T % 50][j][k][i] - (len ? p_full_score[(50+T-len)%50][j][k][i] : 0) > bs) {
-					bs = p_full_score[T % 50][j][k][i] - (len ? p_full_score[(50+T-len)%50][j][k][i] : 0);
-					bp = (p_full[j][k] + i) % 3;
+				if (ROSHAMBO_BOT_p_full_score[ROSHAMBO_BOT_T % 50][j][k][i] - (len ? ROSHAMBO_BOT_p_full_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0) > bs) {
+					bs = ROSHAMBO_BOT_p_full_score[ROSHAMBO_BOT_T % 50][j][k][i] - (len ? ROSHAMBO_BOT_p_full_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0);
+					bp = (ROSHAMBO_BOT_p_full[j][k] + i) % 3;
 				}
 			}
 			for (k = 0; k < 2; k++) {
-				if (r_full_score[T%50][j][k][i]  - (len ? r_full_score[(50+T-len)%50][j][k][i] : 0)> bs) {
-					bs = r_full_score[T%50][j][k][i] - (len ? r_full_score[(50+T-len)%50][j][k][i] : 0);
-					bp = (r_full[j][k] + i) % 3;
+				if (ROSHAMBO_BOT_r_full_score[ROSHAMBO_BOT_T%50][j][k][i]  - (len ? ROSHAMBO_BOT_r_full_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0)> bs) {
+					bs = ROSHAMBO_BOT_r_full_score[ROSHAMBO_BOT_T%50][j][k][i] - (len ? ROSHAMBO_BOT_r_full_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0);
+					bp = (ROSHAMBO_BOT_r_full[j][k] + i) % 3;
 				}
 			}
 		}
 		for (j = 0; j < 2; j++) {
 			for (k = 0; k < 2; k++) {
-				if (p_freq_score[T%50][j][k][i]  - (len ? p_freq_score[(50+T-len)%50][j][k][i] : 0)> bs) {
-					bs = p_freq_score[T%50][j][k][i] - (len ? p_freq_score[(50+T-len)%50][j][k][i] : 0);
-					bp = (p_freq[j][k] + i) % 3;
+				if (ROSHAMBO_BOT_p_freq_score[ROSHAMBO_BOT_T%50][j][k][i]  - (len ? ROSHAMBO_BOT_p_freq_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0)> bs) {
+					bs = ROSHAMBO_BOT_p_freq_score[ROSHAMBO_BOT_T%50][j][k][i] - (len ? ROSHAMBO_BOT_p_freq_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0);
+					bp = (ROSHAMBO_BOT_p_freq[j][k] + i) % 3;
 				}
-				if (r_freq_score[T%50][j][k][i]  - (len ? r_freq_score[(50+T-len)%50][j][k][i] : 0)> bs) {
-					bs = r_freq_score[T%50][j][k][i] - (len ? r_freq_score[(50+T-len)%50][j][k][i] : 0);
-					bp = (r_freq[j][k] + i) % 3;
+				if (ROSHAMBO_BOT_r_freq_score[ROSHAMBO_BOT_T%50][j][k][i]  - (len ? ROSHAMBO_BOT_r_freq_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0)> bs) {
+					bs = ROSHAMBO_BOT_r_freq_score[ROSHAMBO_BOT_T%50][j][k][i] - (len ? ROSHAMBO_BOT_r_freq_score[(50+ROSHAMBO_BOT_T-len)%50][j][k][i] : 0);
+					bp = (ROSHAMBO_BOT_r_freq[j][k] + i) % 3;
 				}
 			}
 		}
@@ -5631,52 +5631,52 @@ void update_scores()
 {
 	int i,j,k;
 
-	p_random_score += score_table[p_random][opp_history[T]];
+	ROSHAMBO_BOT_p_random_score += ROSHAMBO_BOT_score_table[ROSHAMBO_BOT_p_random][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]];
 
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 24; j++) {
 			for (k = 0; k < 4; k++) {
-				p_full_score[T%50][j][k][i] = p_full_score[(T+49)%50][j][k][i] + score_table[(p_full[j][k] + i) % 3][opp_history[T]];
+				ROSHAMBO_BOT_p_full_score[ROSHAMBO_BOT_T%50][j][k][i] = ROSHAMBO_BOT_p_full_score[(ROSHAMBO_BOT_T+49)%50][j][k][i] + ROSHAMBO_BOT_score_table[(ROSHAMBO_BOT_p_full[j][k] + i) % 3][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]];
 			}
 			for (k = 0; k < 2; k++) {
-				r_full_score[T%50][j][k][i] = r_full_score[(T+49)%50][j][k][i] + score_table[(r_full[j][k] + i) % 3][opp_history[T]];
+				ROSHAMBO_BOT_r_full_score[ROSHAMBO_BOT_T%50][j][k][i] = ROSHAMBO_BOT_r_full_score[(ROSHAMBO_BOT_T+49)%50][j][k][i] + ROSHAMBO_BOT_score_table[(ROSHAMBO_BOT_r_full[j][k] + i) % 3][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]];
 			}
 		}
 		for (j = 0; j < 2; j++) {
 			for (k = 0; k < 2; k++) {
-				p_freq_score[T%50][j][k][i] = p_freq_score[(T+49)%50][j][k][i] + score_table[(p_freq[j][k] + i) % 3][opp_history[T]];
-				r_freq_score[T%50][j][k][i] = r_freq_score[(T+49)%50][j][k][i] + score_table[(r_freq[j][k] + i) % 3][opp_history[T]];
+				ROSHAMBO_BOT_p_freq_score[ROSHAMBO_BOT_T%50][j][k][i] = ROSHAMBO_BOT_p_freq_score[(ROSHAMBO_BOT_T+49)%50][j][k][i] + ROSHAMBO_BOT_score_table[(ROSHAMBO_BOT_p_freq[j][k] + i) % 3][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]];
+				ROSHAMBO_BOT_r_freq_score[ROSHAMBO_BOT_T%50][j][k][i] = ROSHAMBO_BOT_r_freq_score[(ROSHAMBO_BOT_T+49)%50][j][k][i] + ROSHAMBO_BOT_score_table[(ROSHAMBO_BOT_r_freq[j][k] + i) % 3][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]];
 			}
 		}
 	}
 
 	for (i = 0; i < 6; i++)
-		s_len[i] += score_table[p_len[i]][opp_history[T]];
+		ROSHAMBO_BOT_s_len[i] += ROSHAMBO_BOT_score_table[ROSHAMBO_BOT_p_len[i]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]];
 }
 
 void init()
 {
 	int i,j,k,l;
 
-	p_random_score = 0;
+	ROSHAMBO_BOT_p_random_score = 0;
 
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 24; j++) {
 			for (k = 0; k < 4; k++) {
-				for (l = 0; l < 50; l++) p_full_score[l][j][k][i] = 0;
+				for (l = 0; l < 50; l++) ROSHAMBO_BOT_p_full_score[l][j][k][i] = 0;
 			}
 			for (k = 0; k < 2; k++) {
-				for (l = 0; l < 50; l++) r_full_score[l][j][k][i] = 0;
+				for (l = 0; l < 50; l++) ROSHAMBO_BOT_r_full_score[l][j][k][i] = 0;
 			}
 		}
 		for (j = 0; j < 2; j++) {
 			for (k = 0; k < 2; k++) {
-				for (l = 0; l < 50; l++) p_freq_score[l][j][k][i] = 0;
-				for (l = 0; l < 50; l++) r_freq_score[l][j][k][i] = 0;
+				for (l = 0; l < 50; l++) ROSHAMBO_BOT_p_freq_score[l][j][k][i] = 0;
+				for (l = 0; l < 50; l++) ROSHAMBO_BOT_r_freq_score[l][j][k][i] = 0;
 			}
 		}
 	}
-	for (i = 0; i < 6; i++) s_len[i] = 0;
+	for (i = 0; i < 6; i++) ROSHAMBO_BOT_s_len[i] = 0;
 }
 
 int find_min_index(int * table, int length)
@@ -5699,41 +5699,41 @@ void make_predictions()
 	int f[3][2][4][3];
 	int t[3][2][4];
 
-	int m_len[3][trials];
+	int m_len[3][ROSHAMBO_BOT_trials];
 	static int freq[2][3];
 
 	int value[2][3] = { { 0, 0, 0 }, { 0, 0, 0 } };
 
 	int gear_freq[3];
 
-	p_random = biased_roshambo(0.3333,0.3333);
+	ROSHAMBO_BOT_p_random = biased_roshambo(0.3333,0.3333);
 
 	for (i = 0; i < 24; i++) {
-		gear[i][T] = (3 + opp_history[T] - p_full[i][2]) % 3;
-		if (T > 1) gear[i][T] += 3 * gear[i][T-1];
-		gear[i][T] = gear[i][T] % 9;
+		ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] = (3 + ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T] - ROSHAMBO_BOT_p_full[i][2]) % 3;
+		if (ROSHAMBO_BOT_T > 1) ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] += 3 * ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T-1];
+		ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] = ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] % 9;
 	}
 
-	if (T == 0) {
+	if (ROSHAMBO_BOT_T == 0) {
 		for (i = 0; i < 2; i++)
 			for (j = 0; j < 3; j++) freq[i][j] = 0;
 	} else {
-		freq[0][my_history[T]]++;
-		freq[1][opp_history[T]]++;
+		freq[0][ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_T]]++;
+		freq[1][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]]++;
 
 		for (i = 0; i < 2; i++) {
-			value[i][0] = (1000 * (freq[i][2] - freq[i][1])) / T;
-			value[i][1] = (1000 * (freq[i][0] - freq[i][2])) / T;
-			value[i][2] = (1000 * (freq[i][1] - freq[i][0])) / T;
+			value[i][0] = (1000 * (freq[i][2] - freq[i][1])) / ROSHAMBO_BOT_T;
+			value[i][1] = (1000 * (freq[i][0] - freq[i][2])) / ROSHAMBO_BOT_T;
+			value[i][2] = (1000 * (freq[i][1] - freq[i][0])) / ROSHAMBO_BOT_T;
 		}
 	}
 
 	for (i = 0; i < 2; i++) {
-		p_freq[i][0] = wins_with[find_max_index(freq[i], 3)];
-		p_freq[i][1] = wins_with[find_max_index(value[i], 3)];
+		ROSHAMBO_BOT_p_freq[i][0] = ROSHAMBO_BOT_wins_with[find_max_index(freq[i], 3)];
+		ROSHAMBO_BOT_p_freq[i][1] = ROSHAMBO_BOT_wins_with[find_max_index(value[i], 3)];
 
-		r_freq[i][0] = best_without[find_min_index(freq[i], 3)];
-		r_freq[i][1] = best_without[find_min_index(value[i], 3)];
+		ROSHAMBO_BOT_r_freq[i][0] = ROSHAMBO_BOT_best_without[find_min_index(freq[i], 3)];
+		ROSHAMBO_BOT_r_freq[i][1] = ROSHAMBO_BOT_best_without[find_min_index(value[i], 3)];
 	}
 
 	for (i = 0; i < 3; i++)
@@ -5744,40 +5744,40 @@ void make_predictions()
 					t[i][j][k] = 0;
 				}
 
-	for (i = T - 1; i > 0; i--) {
+	for (i = ROSHAMBO_BOT_T - 1; i > 0; i--) {
 		m_len[0][i] = 4;
 		for (j = 0; j < 4; j++)
-			if (my_history_hash[j][i] != my_history_hash[j][T]) { m_len[0][i] = j; break; }
+			if (ROSHAMBO_BOT_my_history_hash[j][i] != ROSHAMBO_BOT_my_history_hash[j][ROSHAMBO_BOT_T]) { m_len[0][i] = j; break; }
 		m_len[1][i] = 4;
 		for (j = 0; j < 4; j++)
-			if (opp_history_hash[j][i] != opp_history_hash[j][T]) { m_len[1][i] = j; break; }
+			if (ROSHAMBO_BOT_opp_history_hash[j][i] != ROSHAMBO_BOT_opp_history_hash[j][ROSHAMBO_BOT_T]) { m_len[1][i] = j; break; }
 		m_len[2][i] = 4;
 		for (j = 0; j < 4; j++)
-			if (my_history_hash[j][i] != my_history_hash[j][T] ||
-			    opp_history_hash[j][i] != opp_history_hash[j][T]) { m_len[2][i] = j; break; }
+			if (ROSHAMBO_BOT_my_history_hash[j][i] != ROSHAMBO_BOT_my_history_hash[j][ROSHAMBO_BOT_T] ||
+			    ROSHAMBO_BOT_opp_history_hash[j][i] != ROSHAMBO_BOT_opp_history_hash[j][ROSHAMBO_BOT_T]) { m_len[2][i] = j; break; }
 	}
 
-	for (i = T - 1; i > 0; i--) {
+	for (i = ROSHAMBO_BOT_T - 1; i > 0; i--) {
 		for (j = 0; j < 3; j++) {
 			for (k = 0; k < m_len[j][i]; k++) {
-				f[j][0][k][my_history[i + 1]]++; t[j][0][k]++;
-				f[j][1][k][opp_history[i + 1]]++; t[j][1][k]++;
+				f[j][0][k][ROSHAMBO_BOT_my_history[i + 1]]++; t[j][0][k]++;
+				f[j][1][k][ROSHAMBO_BOT_opp_history[i + 1]]++; t[j][1][k]++;
 
 				if (t[j][0][k] == 1) {
-					p_full[j * 8 + 0 * 4 + k][0] = wins_with[my_history[i + 1]];
+					ROSHAMBO_BOT_p_full[j * 8 + 0 * 4 + k][0] = ROSHAMBO_BOT_wins_with[ROSHAMBO_BOT_my_history[i + 1]];
 				}
 				if (t[j][1][k] == 1) {
-					p_full[j * 8 + 1 * 4 + k][0] = wins_with[opp_history[i + 1]];
+					ROSHAMBO_BOT_p_full[j * 8 + 1 * 4 + k][0] = ROSHAMBO_BOT_wins_with[ROSHAMBO_BOT_opp_history[i + 1]];
 				}
 
 				if (t[j][0][k] == 3) {
-					p_full[j * 8 + 0 * 4 + k][1] = wins_with[find_max_index(f[j][0][k],3)];
-					r_full[j * 8 + 0 * 4 + k][0] = best_without[find_min_index(f[j][0][k],3)];
+					ROSHAMBO_BOT_p_full[j * 8 + 0 * 4 + k][1] = ROSHAMBO_BOT_wins_with[find_max_index(f[j][0][k],3)];
+					ROSHAMBO_BOT_r_full[j * 8 + 0 * 4 + k][0] = ROSHAMBO_BOT_best_without[find_min_index(f[j][0][k],3)];
 				}
 
 				if (t[j][1][k] == 3) {
-					p_full[j * 8 + 1 * 4 + k][1] = wins_with[find_max_index(f[j][1][k],3)];
-					r_full[j * 8 + 1 * 4 + k][0] = best_without[find_min_index(f[j][1][k],3)];
+					ROSHAMBO_BOT_p_full[j * 8 + 1 * 4 + k][1] = ROSHAMBO_BOT_wins_with[find_max_index(f[j][1][k],3)];
+					ROSHAMBO_BOT_r_full[j * 8 + 1 * 4 + k][0] = ROSHAMBO_BOT_best_without[find_min_index(f[j][1][k],3)];
 				}
 			}
 		}
@@ -5785,21 +5785,21 @@ void make_predictions()
 
 	for (j = 0; j < 3; j++) {
 		for (k = 0; k < 4; k++) {
-			p_full[j * 8 + 0 * 4 + k][2] = wins_with[find_max_index(f[j][0][k],3)];
-			r_full[j * 8 + 0 * 4 + k][1] = best_without[find_min_index(f[j][0][k],3)];
+			ROSHAMBO_BOT_p_full[j * 8 + 0 * 4 + k][2] = ROSHAMBO_BOT_wins_with[find_max_index(f[j][0][k],3)];
+			ROSHAMBO_BOT_r_full[j * 8 + 0 * 4 + k][1] = ROSHAMBO_BOT_best_without[find_min_index(f[j][0][k],3)];
 	
-			p_full[j * 8 + 1 * 4 + k][2] = wins_with[find_max_index(f[j][1][k],3)];
-			r_full[j * 8 + 1 * 4 + k][1] = best_without[find_min_index(f[j][1][k],3)];
+			ROSHAMBO_BOT_p_full[j * 8 + 1 * 4 + k][2] = ROSHAMBO_BOT_wins_with[find_max_index(f[j][1][k],3)];
+			ROSHAMBO_BOT_r_full[j * 8 + 1 * 4 + k][1] = ROSHAMBO_BOT_best_without[find_min_index(f[j][1][k],3)];
 		}
 	}
 
 	for (j = 0; j < 24; j++) {
 		for (i = 0; i < 3; i++) gear_freq[i] = 0;
 
-		for (i = T - 1; i > 0; i--)
-			if (gear[j][i] == gear[j][T]) gear_freq[gear[j][i + 1]]++;
+		for (i = ROSHAMBO_BOT_T - 1; i > 0; i--)
+			if (ROSHAMBO_BOT_gear[j][i] == ROSHAMBO_BOT_gear[j][ROSHAMBO_BOT_T]) gear_freq[ROSHAMBO_BOT_gear[j][i + 1]]++;
 
-		p_full[j][3] = (p_full[j][1] + find_max_index(gear_freq,3)) % 3;
+		ROSHAMBO_BOT_p_full[j][3] = (ROSHAMBO_BOT_p_full[j][1] + find_max_index(gear_freq,3)) % 3;
 	}
 
 }
@@ -5808,21 +5808,21 @@ void update_history_hash()
 {
 	int i;
 
-	if (T == 0) {
+	if (ROSHAMBO_BOT_T == 0) {
 		for (i = 0; i < 4; i++) {
-			my_history_hash[i][0] = 0;
-			opp_history_hash[i][0] = 0;
+			ROSHAMBO_BOT_my_history_hash[i][0] = 0;
+			ROSHAMBO_BOT_opp_history_hash[i][0] = 0;
 		}
 
 		return;
 	}
 
-	my_history_hash[0][T] = my_history[T];
-	opp_history_hash[0][T] = opp_history[T];
+	ROSHAMBO_BOT_my_history_hash[0][ROSHAMBO_BOT_T] = ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_T];
+	ROSHAMBO_BOT_opp_history_hash[0][ROSHAMBO_BOT_T] = ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T];
 
 	for (i = 1; i < 4; i++) {
-		my_history_hash[i][T] = my_history_hash[i-1][T - 1] * 3 + my_history[T];
-		opp_history_hash[i][T] = opp_history_hash[i-1][T - 1] * 3 + opp_history[T];
+		ROSHAMBO_BOT_my_history_hash[i][ROSHAMBO_BOT_T] = ROSHAMBO_BOT_my_history_hash[i-1][ROSHAMBO_BOT_T - 1] * 3 + ROSHAMBO_BOT_my_history[ROSHAMBO_BOT_T];
+		ROSHAMBO_BOT_opp_history_hash[i][ROSHAMBO_BOT_T] = ROSHAMBO_BOT_opp_history_hash[i-1][ROSHAMBO_BOT_T - 1] * 3 + ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T];
 	}
 }
 
@@ -5830,7 +5830,7 @@ int greenberg()
 {
 	int i;
 
-	if (T == 0) {
+	if (ROSHAMBO_BOT_T == 0) {
 		init(); fflush(stdout);
 	} else {
 		update_scores();
@@ -5839,19 +5839,19 @@ int greenberg()
 	update_history_hash();
 	make_predictions();
 
-	for (i = 0; i < 6; i++) p_len[i] = find_best_prediction(lengths[i]);
+	for (i = 0; i < 6; i++) ROSHAMBO_BOT_p_len[i] = find_best_prediction(ROSHAMBO_BOT_lengths[i]);
 	
-	return p_len[find_max_index(s_len, 6)];
+	return ROSHAMBO_BOT_p_len[find_max_index(ROSHAMBO_BOT_s_len, 6)];
 }
 
-#undef T
+#undef ROSHAMBO_BOT_T
 
 /**********************************************************************/
 
 /*  End of RoShamBo Player Algorithms  */
 
 
-void Init_Player_Table (Player_Table crosstable[players+1])
+void Init_Player_Table (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j;
 
@@ -6046,13 +6046,13 @@ void Init_Player_Table (Player_Table crosstable[players+1])
 
 #endif /* end of Comment_Block -- be sure to change the #define players value */
 
-    if (i != players) {
+    if (i != ROSHAMBO_BOT_players) {
        fprintf(stderr, " Error: Wrong number of players in tournament! (%d)\n", i);
        exit(1);
     }
 
-    for (i = 0; i <= players; i++) {
-      for (j = 0; j <= players; j++) {
+    for (i = 0; i <= ROSHAMBO_BOT_players; i++) {
+      for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
         crosstable[i].result[j] = 0;
       }
     }
@@ -6063,20 +6063,20 @@ int Play_Match ( int(*player1)(), int(*player2)() )
     /* play a match between two RoShamBo players */
 
     int i, j, p1, p2, p1total, p2total, ties;
-    int p1hist[trials+1], p2hist[trials+1];
+    int p1hist[ROSHAMBO_BOT_trials+1], p2hist[ROSHAMBO_BOT_trials+1];
 
     p1total = 0; p2total = 0; ties = 0;
 
-    for (i = 0; i <= trials; i++) {
+    for (i = 0; i <= ROSHAMBO_BOT_trials; i++) {
         p1hist[i] = 0; p2hist[i] = 0;
-        my_history[i] = 0; opp_history[i] = 0;
+        ROSHAMBO_BOT_my_history[i] = 0; ROSHAMBO_BOT_opp_history[i] = 0;
     }
 
-    for (i = 1; i <= trials; i++) {
+    for (i = 1; i <= ROSHAMBO_BOT_trials; i++) {
 
         /* provide copies of history arrays for each player */
-        memcpy(my_history, p1hist, sizeof(int)*(trials+1));
-        memcpy(opp_history, p2hist, sizeof(int)*(trials+1));
+        memcpy(ROSHAMBO_BOT_my_history, p1hist, sizeof(int)*(ROSHAMBO_BOT_trials+1));
+        memcpy(ROSHAMBO_BOT_opp_history, p2hist, sizeof(int)*(ROSHAMBO_BOT_trials+1));
 
         p1 = player1 ();              /* get player1 action */
         if ( (p1 < 0) || (p1 > 2) ) {
@@ -6084,8 +6084,8 @@ int Play_Match ( int(*player1)(), int(*player2)() )
             p1 = (p1 % 3 + 3) % 3;    /* note: -5 % 3 = -2, not 1 */
         }
 
-        memcpy(opp_history, p1hist, sizeof(int)*(trials+1));
-        memcpy(my_history, p2hist, sizeof(int)*(trials+1));
+        memcpy(ROSHAMBO_BOT_opp_history, p1hist, sizeof(int)*(ROSHAMBO_BOT_trials+1));
+        memcpy(ROSHAMBO_BOT_my_history, p2hist, sizeof(int)*(ROSHAMBO_BOT_trials+1));
 
         p2 = player2 ();             /* get player2 action */
         if ( (p2 < 0) || (p2 > 2) ) {
@@ -6096,77 +6096,77 @@ int Play_Match ( int(*player1)(), int(*player2)() )
         p1hist[0]++; p1hist[p1hist[0]] = p1;
         p2hist[0]++; p2hist[p2hist[0]] = p2;
 
-        if (verbose1) { printf(" p1 = %d, p2 = %d", p1, p2); }
+        if (ROSHAMBO_BOT_verbose1) { printf(" p1 = %d, p2 = %d", p1, p2); }
         if (p1 == p2) {
             ties++;
-            if (verbose1) { printf(" tie!\n"); } }
+            if (ROSHAMBO_BOT_verbose1) { printf(" tie!\n"); } }
         else if ( (p1-p2 == 1) || (p1-p2 == -2) ) {
             p1total++;
-            if (verbose1) { printf(" p1 wins!\n"); } }
+            if (ROSHAMBO_BOT_verbose1) { printf(" p1 wins!\n"); } }
         else if ( (p2-p1 == 1) || (p2-p1 == -2) ) {
             p2total++;
-            if (verbose1) { printf(" p2 wins!\n"); } }
+            if (ROSHAMBO_BOT_verbose1) { printf(" p2 wins!\n"); } }
         else printf("Error: should not be reached.\n");
     }
-    if (verbose2) {
-        printf(" Full history of p1 (%d trials):\n", p1hist[0]);
-        for (j = 1; j <= trials; j++) {
+    if (ROSHAMBO_BOT_verbose2) {
+        printf(" Full history of p1 (%d ROSHAMBO_BOT_trials):\n", p1hist[0]);
+        for (j = 1; j <= ROSHAMBO_BOT_trials; j++) {
             printf(" %d", p1hist[j]); }
         printf("\n");
-        printf(" Full history of p2 (%d trials):\n", p1hist[0]);
-        for (j = 1; j <= trials; j++) {
+        printf(" Full history of p2 (%d ROSHAMBO_BOT_trials):\n", p1hist[0]);
+        for (j = 1; j <= ROSHAMBO_BOT_trials; j++) {
             printf(" %d", p2hist[j]); }
         printf("\n");
     }
-    if (verbose3) {
-        printf(" Match: %*d (%*d+ %*d- %*d=)\n", fw, p1total-p2total,
-                            fw-1, p1total, fw-1, p2total, fw-1, ties);
+    if (ROSHAMBO_BOT_verbose3) {
+        printf(" Match: %*d (%*d+ %*d- %*d=)\n", ROSHAMBO_BOT_fw, p1total-p2total,
+                            ROSHAMBO_BOT_fw-1, p1total, ROSHAMBO_BOT_fw-1, p2total, ROSHAMBO_BOT_fw-1, ties);
     }
 
     return (p1total - p2total);
 }
 
-void Print_T_Results (Player_Table crosstable[players+1])
+void Print_T_Results (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j;
 
     printf("\n Tournament results: \n\n");
     printf("    ");
-    printf("%-*s ", nameleng, crosstable[0].name);
+    printf("%-*s ", ROSHAMBO_BOT_nameleng, crosstable[0].name);
     printf("  total ");
-    for (j = 1; j <= players; j++) {
-        printf(" %*d", fw, j);
+    for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
+        printf(" %*d", ROSHAMBO_BOT_fw, j);
     }
     printf("\n");
-    for (i = 1; i <= players; i++) {
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
         printf(" %2d ", i);
-        printf("%-*s ", nameleng, crosstable[i].name);
-        printf(" %*d ", fw+2, crosstable[i].result[0]);
-        for (j = 1; j <= players; j++) {
-            printf(" %*d", fw, crosstable[i].result[j]);
+        printf("%-*s ", ROSHAMBO_BOT_nameleng, crosstable[i].name);
+        printf(" %*d ", ROSHAMBO_BOT_fw+2, crosstable[i].result[0]);
+        for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
+            printf(" %*d", ROSHAMBO_BOT_fw, crosstable[i].result[j]);
         }
         printf("\n");
     }
     printf("\n");
 }
 
-void Print_Sorted_Results (Player_Table crosstable[players+1])
+void Print_Sorted_Results (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j, max, swap;
-    char nameswap[nameleng+1];
+    char nameswap[ROSHAMBO_BOT_nameleng+1];
 
-    Player_Table sorted[players+1];
+    ROSHAMBO_BOT_Player_Table sorted[ROSHAMBO_BOT_players+1];
 
-    for (i = 0; i <= players; i++) {
+    for (i = 0; i <= ROSHAMBO_BOT_players; i++) {
         strcpy(sorted[i].name, crosstable[i].name);
-        for (j = 0; j <= players; j++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             sorted[i].result[j] = crosstable[i].result[j];
         }
     }
 
-    for (i = 1; i <= players; i++) {
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
         max = i;
-        for (j = i; j <= players; j++) {
+        for (j = i; j <= ROSHAMBO_BOT_players; j++) {
             if ( (sorted[j].result[0] > sorted[max].result[0]) ) {
                 max = j;
             }
@@ -6174,12 +6174,12 @@ void Print_Sorted_Results (Player_Table crosstable[players+1])
         strcpy(nameswap, sorted[i].name);
         strcpy(sorted[i].name, sorted[max].name);
         strcpy(sorted[max].name, nameswap);
-        for (j = 0; j <= players; j++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             swap = sorted[i].result[j];
             sorted[i].result[j] = sorted[max].result[j];
             sorted[max].result[j] = swap;
         }
-        for (j = 1; j <= players; j++) {
+        for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
             swap = sorted[j].result[i];
             sorted[j].result[i] = sorted[j].result[max];
             sorted[j].result[max] = swap;
@@ -6188,23 +6188,23 @@ void Print_Sorted_Results (Player_Table crosstable[players+1])
     Print_T_Results (sorted);
 }
 
-void Print_Scaled_Results (Player_Table crosstable[players+1])
+void Print_Scaled_Results (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j, N;
 
-    Player_Table stable[players+1];
+    ROSHAMBO_BOT_Player_Table stable[ROSHAMBO_BOT_players+1];
 
-    for (i = 0; i <= players; i++) {
+    for (i = 0; i <= ROSHAMBO_BOT_players; i++) {
         strcpy(stable[i].name, crosstable[i].name);
-        for (j = 0; j <= players; j++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             stable[i].result[j] = crosstable[i].result[j];
         }
     }
 
     /* scale down set of N tournaments */
-    N = tourneys;
-    for (i = 1; i <= players; i++) {
-        for (j = 0; j <= players; j++) {
+    N = ROSHAMBO_BOT_tourneys;
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             if ( stable[i].result[j] >= 0 ) {
                 stable[i].result[j] = (stable[i].result[j] * 2 + N) / (2*N);
             }
@@ -6216,54 +6216,54 @@ void Print_Scaled_Results (Player_Table crosstable[players+1])
     Print_Sorted_Results (stable);
 }
 
-void Print_M_Results (Player_Table crosstable[players+1])
+void Print_M_Results (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j, win, draw, loss;
 
-    printf(" Match results (draw <= %d): \n\n", g_drawn);
+    printf(" Match results (draw <= %d): \n\n", ROSHAMBO_BOT_g_drawn);
     printf("    ");
-    printf("%-*s ", nameleng, crosstable[0].name);
+    printf("%-*s ", ROSHAMBO_BOT_nameleng, crosstable[0].name);
     printf("   total  W  L  D ");
-    for (j = 1; j <= players; j++) {
-        printf(" %*d", fw-2, j);
+    for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
+        printf(" %*d", ROSHAMBO_BOT_fw-2, j);
     }
     printf("\n");
-    for (i = 1; i <= players; i++) {
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
         printf(" %2d ", i);
-        printf("%-*s ", nameleng, crosstable[i].name);
-        printf(" %*d ", fw+2, crosstable[i].result[0]);
+        printf("%-*s ", ROSHAMBO_BOT_nameleng, crosstable[i].name);
+        printf(" %*d ", ROSHAMBO_BOT_fw+2, crosstable[i].result[0]);
         win = 0; loss = 0; draw = -1;
-        for (j = 1; j <= players; j++) {
+        for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
             if ( crosstable[i].result[j] == 2 ) { win++; }
             if ( crosstable[i].result[j] == 0 ) { loss++; }
             if ( crosstable[i].result[j] == 1 ) { draw++; }
         }
         printf(" %2d %2d %2d ", win, loss, draw);
-        for (j = 1; j <= players; j++) {
-            printf(" %*d", fw-2, crosstable[i].result[j]);
+        for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
+            printf(" %*d", ROSHAMBO_BOT_fw-2, crosstable[i].result[j]);
         }
         printf("\n");
     }
     printf("\n");
 }
 
-void Print_MSorted_Results (Player_Table crosstable[players+1])
+void Print_MSorted_Results (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j, max, swap;
-    char nameswap[nameleng+1];
+    char nameswap[ROSHAMBO_BOT_nameleng+1];
 
-    Player_Table sorted[players+1];
+    ROSHAMBO_BOT_Player_Table sorted[ROSHAMBO_BOT_players+1];
 
-    for (i = 0; i <= players; i++) {
+    for (i = 0; i <= ROSHAMBO_BOT_players; i++) {
         strcpy(sorted[i].name, crosstable[i].name);
-        for (j = 0; j <= players; j++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             sorted[i].result[j] = crosstable[i].result[j];
         }
     }
 
-    for (i = 1; i <= players; i++) {
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
         max = i;
-        for (j = i; j <= players; j++) {
+        for (j = i; j <= ROSHAMBO_BOT_players; j++) {
             if ( (sorted[j].result[0] > sorted[max].result[0]) ) {
                 max = j;
             }
@@ -6271,12 +6271,12 @@ void Print_MSorted_Results (Player_Table crosstable[players+1])
         strcpy(nameswap, sorted[i].name);
         strcpy(sorted[i].name, sorted[max].name);
         strcpy(sorted[max].name, nameswap);
-        for (j = 0; j <= players; j++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             swap = sorted[i].result[j];
             sorted[i].result[j] = sorted[max].result[j];
             sorted[max].result[j] = swap;
         }
-        for (j = 1; j <= players; j++) {
+        for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
             swap = sorted[j].result[i];
             sorted[j].result[i] = sorted[j].result[max];
             sorted[j].result[max] = swap;
@@ -6285,23 +6285,23 @@ void Print_MSorted_Results (Player_Table crosstable[players+1])
     Print_M_Results (sorted);
 }
 
-void Print_Match_Results (Player_Table crosstable[players+1])
+void Print_Match_Results (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j, N;
 
-    Player_Table mtable[players+1];
+    ROSHAMBO_BOT_Player_Table mtable[ROSHAMBO_BOT_players+1];
 
-    for (i = 0; i <= players; i++) {
+    for (i = 0; i <= ROSHAMBO_BOT_players; i++) {
         strcpy(mtable[i].name, crosstable[i].name);
-        for (j = 0; j <= players; j++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             mtable[i].result[j] = crosstable[i].result[j];
         }
     }
 
     /* scale down set of N tournaments */
-    N = tourneys;
-    for (i = 1; i <= players; i++) {
-        for (j = 0; j <= players; j++) {
+    N = ROSHAMBO_BOT_tourneys;
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
+        for (j = 0; j <= ROSHAMBO_BOT_players; j++) {
             if ( mtable[i].result[j] >= 0 ) {
                 mtable[i].result[j] = (mtable[i].result[j] * 2 + N) / (2*N);
             }
@@ -6312,14 +6312,14 @@ void Print_Match_Results (Player_Table crosstable[players+1])
     }
     /* Print_T_Results (mtable); */ /* scaled results */
 
-    for (i = 1; i <= players; i++) {
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
         mtable[i].result[0] = -1;  /* account for "draw" vs self */
-        for (j = 1; j <= players; j++) {
-            if ( mtable[i].result[j] > g_drawn ) {
+        for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
+            if ( mtable[i].result[j] > ROSHAMBO_BOT_g_drawn ) {
                 mtable[i].result[j] = 2;
                 mtable[i].result[0] += 2;
             }
-            else if ( mtable[i].result[j] < -g_drawn ) {
+            else if ( mtable[i].result[j] < -ROSHAMBO_BOT_g_drawn ) {
                 mtable[i].result[j] = 0;
             }
             else {
@@ -6331,33 +6331,33 @@ void Print_Match_Results (Player_Table crosstable[players+1])
     Print_MSorted_Results (mtable);
 }
 
-void Play_Tournament (Player_Table crosstable[players+1])
+void Play_Tournament (ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1])
 {
     int i, j, score;
 
-    for (i = 1; i <= players; i++) {
-        for (j = i+1; j <= players; j++) {
-            if (verbose3) { printf(" %-*s vs %-*s ", nameleng,
-                crosstable[i].name, nameleng, crosstable[j].name); }
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
+        for (j = i+1; j <= ROSHAMBO_BOT_players; j++) {
+            if (ROSHAMBO_BOT_verbose3) { printf(" %-*s vs %-*s ", ROSHAMBO_BOT_nameleng,
+                crosstable[i].name, ROSHAMBO_BOT_nameleng, crosstable[j].name); }
             score = Play_Match (crosstable[i].pname, crosstable[j].pname);
             crosstable[i].result[j] += score;
             crosstable[j].result[i] -= score;
         }
     }
 
-    for (i = 1; i <= players; i++) {
+    for (i = 1; i <= ROSHAMBO_BOT_players; i++) {
         crosstable[i].result[0] = 0;
-        for (j = 1; j <= players; j++) {
+        for (j = 1; j <= ROSHAMBO_BOT_players; j++) {
             crosstable[i].result[0] += crosstable[i].result[j];
         }
     }
-    if (verbose2) { Print_T_Results (crosstable); }
+    if (ROSHAMBO_BOT_verbose2) { Print_T_Results (crosstable); }
 }
 
 //int main() {
 //
 //   int i;
-//   Player_Table crosstable[players+1];
+//   ROSHAMBO_BOT_Player_Table crosstable[ROSHAMBO_BOT_players+1];
 //
 //   /* fixed or variable seed to the random() function */
 //   /* srandom(time(0)); */
@@ -6366,21 +6366,21 @@ void Play_Tournament (Player_Table crosstable[players+1])
 //   Init_Player_Table (crosstable);
 //
 //   printf(" Playing %d tournaments with %d trials per match...\n\n",
-//             tourneys, trials);
+//             ROSHAMBO_BOT_tourneys, ROSHAMBO_BOT_trials);
 //
-//   for (i = 1; i <= tourneys; i++) {
+//   for (i = 1; i <= ROSHAMBO_BOT_tourneys; i++) {
 //      Play_Tournament (crosstable);
 //      /* Print_Sorted_Results (crosstable); */
-//      /* g_drawn = 50 / sqrt(i);  statistical match draw value */
+//      /* ROSHAMBO_BOT_g_drawn = 50 / sqrt(i);  statistical match draw value */
 //      /* Print_Match_Results (crosstable); */
 //   }
 //
-//   g_drawn = 50.6 / sqrt(tourneys);
-//   printf(" Final results (draw value = %d):\n", g_drawn);
+//   ROSHAMBO_BOT_g_drawn = 50.6 / sqrt(ROSHAMBO_BOT_tourneys);
+//   printf(" Final results (draw value = %d):\n", ROSHAMBO_BOT_g_drawn);
 //   Print_Scaled_Results (crosstable);
 //   Print_Match_Results (crosstable);
 //   /* add one for luck (compare to last iteration)
-//   g_drawn++;
+//   ROSHAMBO_BOT_g_drawn++;
 //   Print_Match_Results (crosstable);
 //   */
 //   return(0);
