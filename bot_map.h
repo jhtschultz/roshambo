@@ -2,6 +2,7 @@
 #define BOT_MAP_H_
 
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <string>
 
