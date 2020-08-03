@@ -5711,7 +5711,7 @@ void make_predictions()
 	for (i = 0; i < 24; i++) {
 		ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] = (3 + ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T] - ROSHAMBO_BOT_p_full[i][2]) % 3;
 		if (ROSHAMBO_BOT_T > 1) ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] += 3 * ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T-1];
-		ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] = ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] % 9;
+		ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] = ROSHAMBO_BOT_gear[i][ROSHAMBO_BOT_T] % 3;
 	}
 
 	if (ROSHAMBO_BOT_T == 0) {
