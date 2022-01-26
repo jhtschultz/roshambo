@@ -5654,7 +5654,8 @@ void update_scores()
 		ROSHAMBO_BOT_s_len[i] += ROSHAMBO_BOT_score_table[ROSHAMBO_BOT_p_len[i]][ROSHAMBO_BOT_opp_history[ROSHAMBO_BOT_T]];
 }
 
-void init()
+/* Changed from init because it was causing problems with duplicated symbols. */
+void roshambo_bot_init()
 {
 	int i,j,k,l;
 
@@ -5831,7 +5832,7 @@ int greenberg()
 	int i;
 
 	if (ROSHAMBO_BOT_T == 0) {
-		init(); fflush(stdout);
+		roshambo_bot_init(); fflush(stdout);
 	} else {
 		update_scores();
 	}
