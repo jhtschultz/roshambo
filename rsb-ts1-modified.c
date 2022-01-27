@@ -4420,8 +4420,8 @@ extern void      Strategy_delete(ROSHAMBO_BOT_Strategy* stgy);
 void             Strategy_Use(ROSHAMBO_BOT_Strategy* stgy);
 int              Strategy_Used(ROSHAMBO_BOT_Strategy* stgy);
 
-extern void MD5Init();
-extern unsigned int MD5Random();
+extern void Roshambo_MD5Init();
+extern unsigned int Roshambo_MD5Random();
 
 #define ROSHAMBO_BOT_strategy_count 7
 #define ROSHAMBO_BOT_AVGLEN 50
@@ -4442,9 +4442,9 @@ random_md5()
 {
   if(FirstTrial())
   {
-    MD5Init();
+    Roshambo_MD5Init();
   }
-  return MD5Random() % 3;
+  return Roshambo_MD5Random() % 3;
 }
 
 static int
@@ -4791,7 +4791,7 @@ int ROSHAMBO_BOT_MD5BufInit [] =
 };
 
 void
-MD5Init()
+Roshambo_MD5Init()
 {
   int i;
   for(i = 0; i < 4; i++)
@@ -4806,7 +4806,7 @@ MD5Init()
 }
 
 unsigned int
-MD5Random()
+Roshambo_MD5Random()
 {
   int i;
   MD5Transform ( ROSHAMBO_BOT_MD5Buf, ROSHAMBO_BOT_MD5In );
